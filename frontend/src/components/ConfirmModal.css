@@ -1,0 +1,142 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 320px;
+  position: relative;
+  border-radius: 34px;
+  overflow: hidden;
+}
+
+.modal-blur-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.modal-blur-mask {
+  position: absolute;
+  inset: -50px;
+  background: white;
+}
+
+.modal-blur-mask::after {
+  content: '';
+  position: absolute;
+  inset: 76px;
+  background: black;
+  border-radius: 34px;
+}
+
+.modal-blur-effect {
+  position: absolute;
+  inset: 31px 26px 21px 26px;
+  background: rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(20px);
+  filter: blur(20px);
+  mix-blend-mode: hard-light;
+  border-radius: 34px;
+}
+
+.modal-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 34px;
+  background: rgba(245, 245, 245, 0.5);
+}
+
+.modal-fill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #0f0f0f;
+  mix-blend-mode: color-dodge;
+  border-radius: 34px;
+}
+
+.modal-glass-effect {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  border-radius: 34px;
+}
+
+.modal-inner {
+  position: relative;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-title {
+  padding: 8px 8px 24px;
+  text-align: center;
+}
+
+.modal-title p {
+  margin: 0;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #000000;
+  letter-spacing: -0.45px;
+  line-height: 1.25;
+}
+
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-button {
+  width: 100%;
+  padding: 13px 16px;
+  border: none;
+  border-radius: 100px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  letter-spacing: -0.43px;
+}
+
+.modal-button:hover {
+  opacity: 0.8;
+}
+
+.modal-button-primary {
+  background: #000000;
+  color: #ffffff;
+  position: relative;
+}
+
+.modal-button-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 100px;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.modal-button-secondary {
+  background: rgba(120, 120, 128, 0.16);
+  color: #000000;
+}

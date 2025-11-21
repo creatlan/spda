@@ -1,0 +1,287 @@
+.home-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.header {
+  padding: 16px 24px;
+  background: #f5f5f5;
+}
+
+.header h1 {
+  margin: 0;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: -0.26px;
+}
+
+.content {
+  padding: 0 16px 24px;
+}
+
+/* Shift Card */
+.shift-card {
+  background: #2d2d2d;
+  border-radius: 16px;
+  padding: 20px 24px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.shift-info h2 {
+  margin: 0 0 8px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.26px;
+}
+
+.shift-datetime {
+  margin: 0 0 24px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.43px;
+}
+
+.shift-time {
+  font-weight: 400;
+}
+
+.find-replacement-btn {
+  width: 100%;
+  padding: 13px 16px;
+  background: transparent;
+  border: 1px solid #8e8e93;
+  border-radius: 100px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: #ffffff;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.find-replacement-btn:hover {
+  opacity: 0.8;
+}
+
+/* Month Section */
+.month-section {
+  margin-bottom: 24px;
+}
+
+.month-section h2 {
+  margin: 0 0 12px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: -0.26px;
+}
+
+.month-cards {
+  display: flex;
+  gap: 10px;
+}
+
+.stats-card,
+.earnings-card {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px 24px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.stats-title {
+  margin: 0 0 8px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #000000;
+  letter-spacing: -0.45px;
+}
+
+.stats-details {
+  display: flex;
+  gap: 16px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 17px;
+  color: #000000;
+}
+
+.icon-sun,
+.icon-moon {
+  width: 22px;
+  height: 22px;
+  color: #000000;
+}
+
+.icon-moon {
+  width: 20px;
+  height: 20px;
+}
+
+.earnings-amount {
+  margin: 0 0 8px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #34c759;
+  letter-spacing: -0.45px;
+}
+
+.earnings-today {
+  margin: 0;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 17px;
+  color: #000000;
+  letter-spacing: -0.43px;
+}
+
+.earnings-today-amount {
+  color: #34c759;
+}
+
+/* Calendar */
+.calendar {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  margin-bottom: 16px;
+}
+
+.calendar-header h3 {
+  margin: 0;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: -0.26px;
+}
+
+.month-nav {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.month-nav svg {
+  width: 24px;
+  height: 24px;
+}
+
+.calendar-grid {
+  border: 1px solid #c7c7cc;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #e5e5ea;
+  border-bottom: 1px solid #c7c7cc;
+}
+
+.weekday {
+  padding: 8px 4px;
+  text-align: center;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  color: rgba(60, 60, 67, 0.6);
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #ffffff;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 2px;
+  position: relative;
+  border-right: 1px solid #e5e5ea;
+  border-bottom: 1px solid #e5e5ea;
+  background: #ffffff;
+  min-height: 60px;
+}
+
+.calendar-day:nth-child(7n) {
+  border-right: none;
+}
+
+.calendar-day.other-month {
+  opacity: 0.4;
+}
+
+.calendar-day.today .day-number {
+  background: #8e8e93;
+  color: #ffffff;
+  border-radius: 100px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.day-number {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #000000;
+  line-height: 1;
+}
+
+.shift-indicator {
+  width: 100%;
+  max-width: 40px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid #d1d1d6;
+  background: #ffffff;
+}
+
+.shift-icon {
+  width: 18px;
+  height: 18px;
+  color: #000000;
+}
+
+.shift-icon.moon {
+  width: 16px;
+  height: 16px;
+}
