@@ -228,20 +228,19 @@
 }
 
 /* Schedule Scrollable Container */
-.schedule-scroll-container {
+.schedule-main {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
-  padding: 0 16px 100px;
+  padding-bottom: 16px;
 }
 
-.schedule-scroll-container::-webkit-scrollbar {
+.schedule-main::-webkit-scrollbar {
   display: none;
 }
 
 .schedule-with-time {
   display: flex;
-  min-height: 1040px;
+  min-height: 960px; /* 12 hours * 80px (9:00-21:00) */
 }
 
 /* Time Column */
@@ -328,15 +327,36 @@
 .morning-shift {
   top: 0;
   height: 480px; /* 6 hours * 80px */
+  border-left: 4px solid #000000;
+  border-radius: 16px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .evening-shift {
   top: 480px;
-  height: 480px; /* 6 hours * 80px */
+  height: 480px; /* 6 hours * 80px (15:00-21:00) */
+  border-radius: 16px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.shift-separator {
+  position: absolute;
+  top: -24px;
+  left: 12px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8e8e93;
+  display: none;
 }
 
 .shift-header {
-  margin-bottom: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .shift-header h3 {

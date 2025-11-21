@@ -36,33 +36,12 @@
   letter-spacing: -0.26px;
 }
 
-/* Week header */
-.week-header {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 16px;
-  margin: 12px 0;
-}
-
-.week-day {
-  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: #000000;
-  text-align: center;
-  flex: 1;
-}
-
-.week-day.weekend {
-  color: #999999;
-}
-
 /* Days selector */
 .days-selector-container {
   display: flex;
   align-items: center;
   padding: 0 8px;
-  margin-bottom: 20px;
+  margin: 20px 0;
   gap: 8px;
 }
 
@@ -213,10 +192,15 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  position: relative;
 }
 
 .time-slot:hover {
   opacity: 0.9;
+}
+
+.time-slot.empty {
+  background: #ffffff;
 }
 
 .time-slot.free {
@@ -237,6 +221,22 @@
 
 .time-slot.shift-evening {
   background: #2d2d2d;
+}
+
+/* Left border for selected shift */
+.time-slot.selected::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #000000;
+  border-radius: 8px 0 0 8px;
+}
+
+.time-slot.shift-evening.selected::before {
+  background: #ffffff;
 }
 
 .slot-label {
@@ -277,32 +277,55 @@
   font-weight: 700;
 }
 
-/* Context Menu */
-.context-menu-overlay {
+/* Quick Action Popup */
+.quick-action-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(20px);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  z-index: 999;
+}
+
+.quick-action-popup {
+  position: fixed;
+  background: #ffffff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  color: #ff3b30;
+  cursor: pointer;
   z-index: 1000;
-  padding: 20px;
+  white-space: nowrap;
+}
+
+.quick-action-popup:hover {
+  background: #f8f8f8;
+}
+
+/* Context Menu - Inline without blur */
+.context-menu-overlay-inline {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
 }
 
 .context-menu-wrapper {
-  width: 100%;
-  max-width: 320px;
-  margin-bottom: 20px;
+  position: fixed;
+  z-index: 1000;
 }
 
 .context-menu {
   position: relative;
   border-radius: 26px;
   overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  min-width: 220px;
 }
 
 .context-menu-blur-container {
@@ -329,7 +352,7 @@
   position: absolute;
   inset: 0;
   border-radius: 26px;
-  background: rgba(245, 245, 245, 0.8);
+  background: rgba(245, 245, 245, 0.95);
   backdrop-filter: blur(40px);
 }
 
@@ -376,8 +399,11 @@
   height: 16px;
   color: #000000;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
-.context-menu-item:not(.selected) svg {
-  visibility: hidden;
+.checkbox-placeholder {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }

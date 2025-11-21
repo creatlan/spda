@@ -1,142 +1,186 @@
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(20px);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
   padding: 20px;
 }
 
-.modal-content {
+.modal-container {
   width: 100%;
-  max-width: 320px;
+  max-width: 330px;
   position: relative;
-  border-radius: 34px;
-  overflow: hidden;
 }
 
-.modal-blur-container {
+.modal-alert {
+  position: relative;
+  width: 100%;
+  border-radius: 34px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 14px;
+  gap: 10px;
+}
+
+/* Blur effect */
+.modal-blur-wrapper {
   position: absolute;
-  inset: 0;
+  inset: -26px;
   pointer-events: none;
 }
 
-.modal-blur-mask {
+.modal-mask {
   position: absolute;
   inset: -50px;
   background: white;
 }
 
-.modal-blur-mask::after {
-  content: '';
+.modal-mask-inner {
   position: absolute;
   inset: 76px;
-  background: black;
   border-radius: 34px;
+  background: black;
 }
 
-.modal-blur-effect {
+.modal-blur {
   position: absolute;
   inset: 31px 26px 21px 26px;
-  background: rgba(0, 0, 0, 0.08);
+  border-radius: 34px;
   backdrop-filter: blur(20px);
+  background: rgba(0, 0, 0, 0.08);
   filter: blur(20px);
   mix-blend-mode: hard-light;
-  border-radius: 34px;
 }
 
+/* Fill */
 .modal-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 34px;
+  pointer-events: none;
+}
+
+.modal-fill-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 34px;
+  pointer-events: none;
+}
+
+.modal-fill-dodge {
+  position: absolute;
+  inset: 0;
+  border-radius: 34px;
+  background: #0f0f0f;
+  mix-blend-mode: color-dodge;
+}
+
+.modal-fill-bg {
   position: absolute;
   inset: 0;
   border-radius: 34px;
   background: rgba(245, 245, 245, 0.5);
 }
 
-.modal-fill::before {
-  content: '';
+/* Glass effect */
+.modal-glass {
   position: absolute;
   inset: 0;
-  background: #0f0f0f;
-  mix-blend-mode: color-dodge;
   border-radius: 34px;
+  background: rgba(0, 0, 0, 0);
 }
 
-.modal-glass-effect {
-  position: absolute;
-  inset: 0;
-  background: transparent;
-  border-radius: 34px;
-}
-
-.modal-inner {
+/* Content */
+.modal-content {
   position: relative;
-  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 100%;
+  z-index: 1;
+}
+
+.modal-title-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .modal-title {
-  padding: 8px 8px 24px;
-  text-align: center;
-}
-
-.modal-title p {
   margin: 0;
+  padding: 8px 8px 24px;
   font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 20px;
-  font-weight: 600;
-  color: #000000;
+  font-weight: 590;
+  line-height: 25px;
   letter-spacing: -0.45px;
-  line-height: 1.25;
+  color: #000000;
+  text-align: center;
+  width: 100%;
 }
 
+/* Buttons */
 .modal-buttons {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 100%;
 }
 
 .modal-button {
+  position: relative;
   width: 100%;
-  padding: 13px 16px;
-  border: none;
+  height: 48px;
   border-radius: 100px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 16px;
+  cursor: pointer;
   font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 17px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.2s;
+  font-weight: 510;
+  line-height: 22px;
   letter-spacing: -0.43px;
+  transition: opacity 0.2s;
 }
 
-.modal-button:hover {
-  opacity: 0.8;
+.modal-button:active {
+  opacity: 0.7;
 }
 
-.modal-button-primary {
-  background: #000000;
+.modal-button.primary {
+  background: rgba(255, 255, 255, 0.6);
   color: #ffffff;
-  position: relative;
 }
 
-.modal-button-primary::before {
-  content: '';
+.modal-button.secondary {
+  color: #000000;
+}
+
+.modal-button-bg {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.6);
   border-radius: 100px;
-  mix-blend-mode: overlay;
-  pointer-events: none;
 }
 
-.modal-button-secondary {
+.primary-bg {
+  background: #000000;
+}
+
+.secondary-bg {
   background: rgba(120, 120, 128, 0.16);
-  color: #000000;
+}
+
+.modal-button span {
+  position: relative;
+  z-index: 1;
+  white-space: nowrap;
 }

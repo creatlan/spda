@@ -1,60 +1,11 @@
 
- # WorkPlan
+  # Mobile Web App Design
 
+  This is a code bundle for Mobile Web App Design. The original project is available at https://www.figma.com/design/4HCCmkMUEA5cY8wJGVhqkE/Mobile-Web-App-Design.
 
-## Обзор
+  ## Running the code
 
-Этот репозиторий содержит фронтенд-приложение (на Vite + React + TypeScript), 
-используемое для демонстрации мобильного интерфейса и компонентов.
+  Run `npm i` to install the dependencies.
 
-## Возможности
-
-- Набор переиспользуемых UI-компонентов (`src/components` и `src/components/ui`)
-- Страницы примера (Home, Availability, Schedule, Profile)
-- Быстрый старт для разработки и сборки
-
-## Быстрый старт
-
-### Требования
-
-- Node.js
-- npm или yarn
-
-### Установка зависимостей
-
-В корне каталога `frontend` выполните (PowerShell):
-
-```powershell
-npm i
-```
-
-### Запуск в режиме разработки
-
-```powershell
-npm run dev
-```
-
-После запуска откройте указанный адрес (обычно `http://localhost:5173`).
-
-### Сборка для продакшна и превью
-
-```powershell
-npm run build
-npm run preview
-```
-
-> Примечание: набор доступных скриптов можно посмотреть в `package.json`.
-
-## Структура проекта (кратко)
-
-- `index.html` — шаблон страницы
-- `src/` — исходники приложения
-  - `main.tsx` — точка входа
-  - `App.tsx` — корневой компонент
-  - `components/` — компоненты и UI-утилиты
-  - `pages/` — готовые страницы приложения
-  - `styles/` — глобальные стили
-
-## Лицензия
-
-Проект содержит файл `LICENSE` в корне — смотрите лицензионные условия.
+  Run `npm run dev` to start the development server.
+  

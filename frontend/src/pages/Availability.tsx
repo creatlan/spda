@@ -2,33 +2,40 @@ import { useState, useRef } from 'react';
 import ConfirmModal from '../components/ConfirmModal';
 import './Availability.css';
 
-type AvailabilityStatus = 'free' | 'inconvenient' | 'unavailable' | 'shift-day' | 'shift-evening';
+type AvailabilityStatus = null | 'free' | 'inconvenient' | 'unavailable' | 'shift-day' | 'shift-evening';
+
+interface AvailabilityData {
+  [key: string]: {
+    morning: AvailabilityStatus;
+    evening: AvailabilityStatus;
+  };
+}
 
 export default function Availability() {
   const today = new Date();
-  const [selectedDateOffset, setSelectedDateOffset] = useState(0); // Offset from today
+  const [selectedDateOffset, setSelectedDateOffset] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showQuickAction, setShowQuickAction] = useState(false);
+  const [quickActionPosition, setQuickActionPosition] = useState({ x: 0, y: 0 });
   const [selectedSlot, setSelectedSlot] = useState<{ date: Date; time: 'morning' | 'evening' } | null>(null);
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [contextMenuSlot, setContextMenuSlot] = useState<{ date: Date; time: 'morning' | 'evening' } | null>(null);
+  
+  // Store availability data - will be fetched from backend
+  // TODO: Replace with API call to GET /api/availability
+  const [availabilityData, setAvailabilityData] = useState<AvailabilityData>({});
 
-  const monthNames = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня', 'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'];
-  const weekdaysShort = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
-
-  // Generate infinite scroll days (30 days back and forward)
   const generateInfiniteDays = () => {
     const days = [];
     for (let i = -30; i <= 30; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
-      const weekdayIndex = (date.getDay() + 6) % 7;
       days.push({
         date: date,
         day: date.getDate(),
         month: date.getMonth(),
         year: date.getFullYear(),
-        weekday: weekdaysShort[weekdayIndex],
         offset: i,
       });
     }
@@ -36,31 +43,45 @@ export default function Availability() {
   };
 
   const allDays = generateInfiniteDays();
-  const visibleDays = allDays.slice(30 + selectedDateOffset - 3, 30 + selectedDateOffset + 4); // 7 days visible
+  const visibleDays = allDays.slice(30 + selectedDateOffset - 3, 30 + selectedDateOffset + 4);
 
-  // Get schedule based on date
+  const getDateKey = (date: Date) => {
+    return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+  };
+
   const getSchedule = (date: Date) => {
+    const key = getDateKey(date);
+    const saved = availabilityData[key];
+    
+    if (saved) {
+      return {
+        morning: { start: '9', end: '15', status: saved.morning },
+        evening: { start: '15', end: '21', status: saved.evening },
+      };
+    }
+
+    // Demo data for visualization
     const dayOfWeek = (date.getDay() + 6) % 7;
     
-    if (dayOfWeek === 0) { // Monday
+    if (dayOfWeek === 0) {
       return {
         morning: { start: '9', end: '15', status: 'shift-day' as AvailabilityStatus },
         evening: { start: '15', end: '21', status: 'inconvenient' as AvailabilityStatus },
       };
-    } else if (dayOfWeek === 1) { // Tuesday
+    } else if (dayOfWeek === 1) {
       return {
         morning: { start: '9', end: '15', status: 'free' as AvailabilityStatus },
         evening: { start: '15', end: '21', status: 'shift-evening' as AvailabilityStatus },
       };
-    } else if (dayOfWeek === 3) { // Thursday
+    } else if (dayOfWeek === 3) {
       return {
         morning: { start: '9', end: '15', status: 'inconvenient' as AvailabilityStatus },
         evening: { start: '15', end: '21', status: 'unavailable' as AvailabilityStatus },
       };
     } else {
       return {
-        morning: { start: '9', end: '15', status: 'free' as AvailabilityStatus },
-        evening: { start: '15', end: '21', status: 'free' as AvailabilityStatus },
+        morning: { start: '9', end: '15', status: null },
+        evening: { start: '15', end: '21', status: null },
       };
     }
   };
@@ -75,22 +96,86 @@ export default function Availability() {
     const slot = schedule[time];
     
     if (slot.status === 'shift-day' || slot.status === 'shift-evening') {
+      // Show quick action popup for shifts
+      const rect = event.currentTarget.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      
+      // Center horizontally and make sure it doesn't go off screen
+      let x = rect.left + rect.width / 2;
+      x = Math.max(100, Math.min(x, viewportWidth - 100)); // Keep within bounds
+      
+      setQuickActionPosition({ 
+        x: x, 
+        y: rect.bottom + 8 
+      });
       setSelectedSlot({ date, time });
-      setIsModalOpen(true);
+      setShowQuickAction(true);
     } else {
-      // Show context menu
-      setContextMenuPosition({ x: event.clientX, y: event.clientY });
+      // Show context menu for status selection
+      const rect = event.currentTarget.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      const menuWidth = 230;
+      const menuHeight = 180;
+      
+      // Calculate position to keep menu within viewport
+      let x = rect.left + rect.width / 2;
+      let y = rect.bottom + 8;
+      
+      // Check horizontal bounds
+      if (x + menuWidth / 2 > viewportWidth - 16) {
+        x = viewportWidth - menuWidth / 2 - 16;
+      }
+      if (x - menuWidth / 2 < 16) {
+        x = menuWidth / 2 + 16;
+      }
+      
+      // Check vertical bounds
+      if (y + menuHeight > viewportHeight - 16) {
+        y = rect.top - menuHeight - 8;
+      }
+      
+      setContextMenuPosition({ x, y });
+      setContextMenuSlot({ date, time });
       setShowContextMenu(true);
     }
   };
 
+  const handleQuickActionClick = () => {
+    setShowQuickAction(false);
+    setIsModalOpen(true);
+  };
+
   const handleConfirmReplacement = () => {
     setIsModalOpen(false);
+    // TODO: API call to POST /api/shifts/find-replacement
     console.log('Finding replacement for:', selectedSlot);
     setSelectedSlot(null);
   };
 
+  const handleStatusSelect = (status: AvailabilityStatus) => {
+    if (contextMenuSlot) {
+      const key = getDateKey(contextMenuSlot.date);
+      const currentData = availabilityData[key] || { morning: null, evening: null };
+      
+      setAvailabilityData({
+        ...availabilityData,
+        [key]: {
+          ...currentData,
+          [contextMenuSlot.time]: status,
+        }
+      });
+
+      // TODO: API call to PUT /api/availability
+      // body: { date: key, time: contextMenuSlot.time, status }
+    }
+    setShowContextMenu(false);
+    setContextMenuSlot(null);
+  };
+
   const getStatusLabel = (status: AvailabilityStatus) => {
+    if (!status) return '';
     switch (status) {
       case 'free':
         return 'Свободен';
@@ -121,17 +206,27 @@ export default function Availability() {
     }
   };
 
-  // Get the 3 days to display (yesterday, today, tomorrow relative to selected)
   const displayDays = [
     allDays[30 + selectedDateOffset - 1],
     allDays[30 + selectedDateOffset],
     allDays[30 + selectedDateOffset + 1],
   ];
 
+  const getCurrentStatus = () => {
+    if (!contextMenuSlot) return null;
+    const schedule = getSchedule(contextMenuSlot.date);
+    return schedule[contextMenuSlot.time].status;
+  };
+
+  const handleBackToHome = () => {
+    // Navigate back to home - handled by App.tsx state
+    window.dispatchEvent(new CustomEvent('navigate-home'));
+  };
+
   return (
     <div className="availability-page">
       <div className="availability-header">
-        <button className="back-button">
+        <button className="back-button" onClick={handleBackToHome}>
           <svg fill="none" viewBox="0 0 24 24">
             <path
               d="M15 18L9 12L15 6"
@@ -142,16 +237,7 @@ export default function Availability() {
             />
           </svg>
         </button>
-        <h1>{monthNames[displayDays[1].month]}</h1>
-      </div>
-
-      {/* Week days header */}
-      <div className="week-header">
-        {weekdaysShort.map((day, index) => (
-          <div key={index} className={`week-day ${index >= 5 ? 'weekend' : ''}`}>
-            {day}
-          </div>
-        ))}
+        <h1>Ноябрь</h1>
       </div>
 
       {/* Days selector with infinite scroll */}
@@ -165,16 +251,18 @@ export default function Availability() {
             <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
-        <div className="days-selector" ref={scrollRef}>
+        <div className="days-selector">
           {visibleDays.map((dayInfo, index) => {
             const isSelected = dayInfo.offset === selectedDateOffset;
+            const weekdayIndex = (dayInfo.date.getDay() + 6) % 7;
+            const weekdays = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
             return (
               <div 
                 key={index} 
                 className={`day-item ${isSelected ? 'selected' : ''}`}
                 onClick={() => handleDayClick(dayInfo.offset)}
               >
-                <div className="day-weekday">{dayInfo.weekday}</div>
+                <div className="day-weekday">{weekdays[weekdayIndex]}</div>
                 <div className="day-number">{dayInfo.day}</div>
                 {isSelected && <div className="day-dot" />}
               </div>
@@ -204,11 +292,15 @@ export default function Availability() {
 
         <div className="schedule-grid">
           <div className="column-headers">
-            {displayDays.map((dayInfo, index) => (
-              <div key={index} className="column-header">
-                {dayInfo.weekday} - {String(dayInfo.day).padStart(2, '0')}
-              </div>
-            ))}
+            {displayDays.map((dayInfo, index) => {
+              const weekdayIndex = (dayInfo.date.getDay() + 6) % 7;
+              const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+              return (
+                <div key={index} className="column-header">
+                  {weekdays[weekdayIndex]} - {String(dayInfo.day).padStart(2, '0')}
+                </div>
+              );
+            })}
           </div>
 
           <div className="time-slots">
@@ -217,19 +309,27 @@ export default function Availability() {
               return (
                 <div key={dayIndex} className="day-column">
                   <div
-                    className={`time-slot ${schedule.morning.status}`}
+                    className={`time-slot ${schedule.morning.status || 'empty'} ${schedule.morning.status === 'shift-day' ? 'selected' : ''}`}
                     onClick={(e) => handleSlotClick(dayInfo.date, 'morning', e)}
                   >
-                    <p className="slot-label">{getStatusLabel(schedule.morning.status)}</p>
-                    <p className="slot-time">{schedule.morning.start}-{schedule.morning.end}</p>
+                    {schedule.morning.status && (
+                      <>
+                        <p className="slot-label">{getStatusLabel(schedule.morning.status)}</p>
+                        <p className="slot-time">{schedule.morning.start}-{schedule.morning.end}</p>
+                      </>
+                    )}
                   </div>
 
                   <div
-                    className={`time-slot ${schedule.evening.status}`}
+                    className={`time-slot ${schedule.evening.status || 'empty'} ${schedule.evening.status === 'shift-evening' ? 'selected' : ''}`}
                     onClick={(e) => handleSlotClick(dayInfo.date, 'evening', e)}
                   >
-                    <p className="slot-label">{getStatusLabel(schedule.evening.status)}</p>
-                    <p className="slot-time">{schedule.evening.start}-{schedule.evening.end}</p>
+                    {schedule.evening.status && (
+                      <>
+                        <p className="slot-label">{getStatusLabel(schedule.evening.status)}</p>
+                        <p className="slot-time">{schedule.evening.start}-{schedule.evening.end}</p>
+                      </>
+                    )}
                   </div>
                 </div>
               );
@@ -238,10 +338,38 @@ export default function Availability() {
         </div>
       </div>
 
-      {/* Context menu */}
+      {/* Quick action popup */}
+      {showQuickAction && (
+        <div className="quick-action-overlay" onClick={() => setShowQuickAction(false)}>
+          <div 
+            className="quick-action-popup"
+            style={{
+              left: `${quickActionPosition.x}px`,
+              top: `${quickActionPosition.y}px`,
+              transform: 'translateX(-50%)'
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleQuickActionClick();
+            }}
+          >
+            Найти замену
+          </div>
+        </div>
+      )}
+
+      {/* Context menu - Positioned smartly */}
       {showContextMenu && (
-        <div className="context-menu-overlay" onClick={() => setShowContextMenu(false)}>
-          <div className="context-menu-wrapper" onClick={(e) => e.stopPropagation()}>
+        <div className="context-menu-overlay-inline" onClick={() => setShowContextMenu(false)}>
+          <div 
+            className="context-menu-wrapper"
+            style={{
+              left: `${contextMenuPosition.x}px`,
+              top: `${contextMenuPosition.y}px`,
+              transform: 'translateX(-50%)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="context-menu">
               <div className="context-menu-blur-container">
                 <div className="context-menu-blur-mask" />
@@ -251,16 +379,40 @@ export default function Availability() {
                 <div className="context-menu-section">
                   <p className="context-menu-title">Занятость</p>
                 </div>
-                <button className="context-menu-item" onClick={() => setShowContextMenu(false)}>
+                <button 
+                  className={`context-menu-item ${getCurrentStatus() === 'free' ? 'selected' : ''}`}
+                  onClick={() => handleStatusSelect('free')}
+                >
+                  {getCurrentStatus() === 'free' && (
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M13.5 4L6 11.5L2.5 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                  {getCurrentStatus() !== 'free' && <div className="checkbox-placeholder"></div>}
                   <span>Свободен</span>
                 </button>
-                <button className="context-menu-item selected" onClick={() => setShowContextMenu(false)}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M13.5 4L6 11.5L2.5 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                <button 
+                  className={`context-menu-item ${getCurrentStatus() === 'inconvenient' ? 'selected' : ''}`}
+                  onClick={() => handleStatusSelect('inconvenient')}
+                >
+                  {getCurrentStatus() === 'inconvenient' && (
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M13.5 4L6 11.5L2.5 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                  {getCurrentStatus() !== 'inconvenient' && <div className="checkbox-placeholder"></div>}
                   <span>Не удобно, но могу выйти</span>
                 </button>
-                <button className="context-menu-item" onClick={() => setShowContextMenu(false)}>
+                <button 
+                  className={`context-menu-item ${getCurrentStatus() === 'unavailable' ? 'selected' : ''}`}
+                  onClick={() => handleStatusSelect('unavailable')}
+                >
+                  {getCurrentStatus() === 'unavailable' && (
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M13.5 4L6 11.5L2.5 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                  {getCurrentStatus() !== 'unavailable' && <div className="checkbox-placeholder"></div>}
                   <span>Не могу выйти</span>
                 </button>
               </div>

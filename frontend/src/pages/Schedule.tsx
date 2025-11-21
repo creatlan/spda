@@ -19,7 +19,6 @@ export default function Schedule() {
   const [showFilters, setShowFilters] = useState(false);
 
   const weekdaysShort = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
-  const monthNames = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня', 'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'];
 
   // Generate week days with infinite scroll
   const generateWeekDays = () => {
@@ -41,7 +40,7 @@ export default function Schedule() {
   const allDays = generateWeekDays();
   const selectedDay = allDays[30 + selectedDateOffset];
 
-  // Time range with 1-hour intervals
+  // Time range with 1-hour intervals (9:00 - 21:00)
   const timeLabels = [];
   for (let hour = 9; hour <= 21; hour++) {
     timeLabels.push({ hour, label: `${hour}:00` });
@@ -86,10 +85,15 @@ export default function Schedule() {
   // Get visible week days
   const visibleDays = allDays.slice(30 + selectedDateOffset - 3, 30 + selectedDateOffset + 4);
 
+  const handleBackToHome = () => {
+    // Navigate back to home - handled by App.tsx state
+    window.dispatchEvent(new CustomEvent('navigate-home'));
+  };
+
   return (
     <div className="schedule-page">
       <div className="schedule-header">
-        <button className="back-button">
+        <button className="back-button" onClick={handleBackToHome}>
           <svg fill="none" viewBox="0 0 24 24">
             <path
               d="M15 18L9 12L15 6"
@@ -100,7 +104,7 @@ export default function Schedule() {
             />
           </svg>
         </button>
-        <h1>{monthNames[selectedDay.date.getMonth()]}</h1>
+        <h1>Ноябрь</h1>
         <div className="header-actions">
           <button className="filters-button" onClick={() => setShowFilters(!showFilters)}>
             Позиция
@@ -201,7 +205,8 @@ export default function Schedule() {
               </div>
 
               {/* Morning shift: 9:00-15:00 (rows 0-6) */}
-              <div className="shift-block-absolute morning-shift">
+              <div className="shift-block-absolute morning-shift selected">
+                <div className="shift-separator">День</div>
                 <div className="shift-header">
                   <h3>СМЕНА - День</h3>
                   <p className="shift-time">9-15</p>
