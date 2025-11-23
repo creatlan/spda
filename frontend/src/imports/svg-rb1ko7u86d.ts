@@ -1,6 +1,0 @@
-export default {
-  "p21d8a8c0": "M1 1H4V4H1V1Z",
-  "p1949c672": "M8 1H11V4H8V1Z",
-  "pf89e900": "M1 8H4V11H1V8Z",
-  "p1536e780": "M8 8H11V11H8V8Z"
-};

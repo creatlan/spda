@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import svgPaths from '../imports/svg-xxbelapiyp';
+import svgPaths from '../imports/iconPaths';
 import './HistoryModal.css';
 
 interface HistoryModalProps {
