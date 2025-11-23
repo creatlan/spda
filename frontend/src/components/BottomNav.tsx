@@ -1,5 +1,5 @@
-import svgPaths from '../imports/svg-e6acfk1vpd';
-import availabilityPaths from '../imports/svg-qnxjpo2d4f';
+import svgPaths from '../imports/iconPaths';
+import availabilityPaths from '../imports/availabilityIconPaths';
 import './BottomNav.css';
 
 interface BottomNavProps {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import svgPaths from '../imports/svg-e6acfk1vpd';
+import svgPaths from '../imports/iconPaths';
 import ConfirmModal from '../components/ConfirmModal';
 import HistoryModal from '../components/HistoryModal';
 import NextShiftCard from '../components/NextShiftCard';
