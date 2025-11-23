@@ -21,53 +21,10 @@
   padding: 0 16px 24px;
 }
 
-/* Shift Card */
-.shift-card {
-  background: #2d2d2d;
-  border-radius: 16px;
-  padding: 20px 24px 24px;
+/* Next Shift Card Wrapper */
+.next-shift-wrapper {
+  height: 168px;
   margin-bottom: 24px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-}
-
-.shift-info h2 {
-  margin: 0 0 8px;
-  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: -0.26px;
-}
-
-.shift-datetime {
-  margin: 0 0 24px;
-  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 17px;
-  font-weight: 600;
-  color: #ffffff;
-  letter-spacing: -0.43px;
-}
-
-.shift-time {
-  font-weight: 400;
-}
-
-.find-replacement-btn {
-  width: 100%;
-  padding: 13px 16px;
-  background: transparent;
-  border: 1px solid #8e8e93;
-  border-radius: 100px;
-  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 17px;
-  font-weight: 500;
-  color: #ffffff;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.find-replacement-btn:hover {
-  opacity: 0.8;
 }
 
 /* Month Section */
@@ -244,14 +201,7 @@
 }
 
 .calendar-day.today .day-number {
-  background: #8e8e93;
-  color: #ffffff;
-  border-radius: 100px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-weight: 700;
 }
 
 .day-number {

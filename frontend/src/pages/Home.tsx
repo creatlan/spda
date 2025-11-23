@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import svgPaths from '../imports/svg-e6acfk1vpd';
 import ConfirmModal from '../components/ConfirmModal';
+import HistoryModal from '../components/HistoryModal';
+import NextShiftCard from '../components/NextShiftCard';
 import './Home.css';
 
 interface ShiftData {
@@ -12,6 +14,8 @@ export default function Home() {
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [shiftStatus, setShiftStatus] = useState<'normal' | 'searching' | 'found'>('normal');
   
   // Store shift data - will be fetched from backend
   // TODO: Replace with API call to GET /api/shifts?month=X&year=Y
@@ -45,6 +49,15 @@ export default function Home() {
     setShiftsData(demoShifts);
   }, [currentMonth, currentYear]);
 
+  useEffect(() => {
+    const handleCloseHistory = () => {
+      setIsHistoryOpen(false);
+    };
+
+    window.addEventListener('close-history', handleCloseHistory);
+    return () => window.removeEventListener('close-history', handleCloseHistory);
+  }, []);
+
   const monthNames = [
     'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
     'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
@@ -68,7 +81,8 @@ export default function Home() {
     return day === 0 ? 6 : day - 1;
   };
 
-  const handlePrevMonth = () => {
+  const handlePrevMonth = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (currentMonth === 0) {
       setCurrentMonth(11);
       setCurrentYear(currentYear - 1);
@@ -77,7 +91,8 @@ export default function Home() {
     }
   };
 
-  const handleNextMonth = () => {
+  const handleNextMonth = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (currentMonth === 11) {
       setCurrentMonth(0);
       setCurrentYear(currentYear + 1);
@@ -93,8 +108,23 @@ export default function Home() {
 
   const handleConfirmReplacement = () => {
     setIsModalOpen(false);
+    setShiftStatus('searching');
+    
     // TODO: API call to POST /api/shifts/find-replacement
     console.log('Finding replacement...');
+    
+    // Demo: After 3 seconds, mark as found
+    setTimeout(() => {
+      setShiftStatus('found');
+    }, 3000);
+  };
+
+  const handleHistoryClick = () => {
+    setIsHistoryOpen(true);
+  };
+
+  const handleCalendarClick = () => {
+    setIsHistoryOpen(true);
   };
 
   const daysInMonth = getDaysInMonth(currentMonth, currentYear);
@@ -131,16 +161,14 @@ export default function Home() {
       </div>
 
       <div className="content">
-        <div className="shift-card">
-          <div className="shift-info">
-            <h2>Следующая смена</h2>
-            <p className="shift-datetime">
-              {formattedDate} <span className="shift-time">15:00-21:00</span>
-            </p>
-          </div>
-          <button className="find-replacement-btn" onClick={handleFindReplacementClick}>
-            Найти замену
-          </button>
+        <div className="next-shift-wrapper">
+          <NextShiftCard
+            date={formattedDate}
+            startTime="9:00"
+            endTime="15:00"
+            onFindReplacement={handleFindReplacementClick}
+            status={shiftStatus}
+          />
         </div>
 
         <div className="month-section">
@@ -185,7 +213,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="calendar">
+        <div className="calendar" onClick={handleCalendarClick} style={{ cursor: 'pointer' }}>
           <div className="calendar-header">
             <button className="month-nav" onClick={handlePrevMonth}>
               <svg fill="none" viewBox="0 0 24 24">
@@ -198,7 +226,9 @@ export default function Home() {
                 />
               </svg>
             </button>
-            <h3>{monthNames[currentMonth]} {currentYear}</h3>
+            <h3>
+              {monthNames[currentMonth]} {currentYear}
+            </h3>
             <button className="month-nav" onClick={handleNextMonth}>
               <svg fill="none" viewBox="0 0 24 24">
                 <path
@@ -282,6 +312,13 @@ export default function Home() {
         onConfirm={handleConfirmReplacement}
         title="Найти замену"
         message="Вы действительно не сможете и хотите найти замену?"
+      />
+
+      <HistoryModal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        month={currentMonth}
+        year={currentYear}
       />
     </div>
   );

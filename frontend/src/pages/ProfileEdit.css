@@ -1,0 +1,222 @@
+.profile-edit-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 20px 16px 100px;
+  position: relative;
+}
+
+/* Header */
+.edit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 17px;
+  color: #000000;
+  letter-spacing: -0.43px;
+}
+
+.edit-header h2 {
+  margin: 0;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #000000;
+  letter-spacing: -0.45px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Photo Section */
+.photo-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.photo-edit-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #d1d1d6;
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.photo-edit-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pencil-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.photo-edit-btn:hover .pencil-overlay {
+  opacity: 1;
+}
+
+.name-fields {
+  flex: 1;
+  background: rgba(120, 120, 128, 0.16);
+  border-radius: 26px;
+  overflow: hidden;
+}
+
+.name-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 16px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: #000000;
+  letter-spacing: -0.43px;
+  outline: none;
+}
+
+.name-input::placeholder {
+  color: rgba(60, 60, 67, 0.3);
+}
+
+.field-separator {
+  height: 1px;
+  background: #e6e6e6;
+}
+
+/* Position Section */
+.position-section {
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.position-select {
+  width: 100%;
+  background: rgba(120, 120, 128, 0.16);
+  border: none;
+  border-radius: 26px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: #000000;
+  letter-spacing: -0.43px;
+  cursor: pointer;
+}
+
+.position-select .chevron {
+  transform: rotate(-90deg);
+  transition: transform 0.3s;
+}
+
+.position-select .chevron.open {
+  transform: rotate(0deg);
+}
+
+/* Position Menu */
+.position-menu {
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.25);
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menu-header {
+  padding: 4px 8px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 13px;
+  color: #bfbfbf;
+  letter-spacing: -0.08px;
+}
+
+.menu-item {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 17px;
+  color: #333333;
+  letter-spacing: -0.43px;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.menu-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.menu-item.selected {
+  font-weight: 600;
+  color: #000000;
+}
+
+/* Save Button */
+.save-btn {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  background: #000000;
+  border: none;
+  border-radius: 100px;
+  padding: 13px 16px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: #ffffff;
+  letter-spacing: -0.43px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.save-btn:hover {
+  background: #333333;
+}

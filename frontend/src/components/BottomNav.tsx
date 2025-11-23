@@ -1,4 +1,5 @@
 import svgPaths from '../imports/svg-e6acfk1vpd';
+import availabilityPaths from '../imports/svg-qnxjpo2d4f';
 import './BottomNav.css';
 
 interface BottomNavProps {
@@ -29,16 +30,30 @@ export default function BottomNav({ activePage, onPageChange }: BottomNavProps) 
         className={`nav-item ${activePage === 'availability' ? 'active' : ''}`}
         onClick={() => onPageChange('availability')}
       >
-        <svg className="nav-icon" fill="none" viewBox="0 0 28 28">
+        <svg className="nav-icon" fill="none" viewBox="0 0 23 23">
           <path
-            d={svgPaths.p3ba23a00}
+            d={availabilityPaths.p21d8a8c0}
             stroke="currentColor"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="2"
           />
           <path
-            d={svgPaths.p6580970}
+            d={availabilityPaths.p1949c672}
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
+          <path
+            d={availabilityPaths.pf89e900}
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
+          <path
+            d={availabilityPaths.p1536e780}
             stroke="currentColor"
             strokeLinecap="round"
             strokeLinejoin="round"

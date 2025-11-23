@@ -19,6 +19,7 @@ export default function Schedule() {
   const [showFilters, setShowFilters] = useState(false);
 
   const weekdaysShort = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
+  const weekdaysFull = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
   // Generate week days with infinite scroll
   const generateWeekDays = () => {
@@ -30,8 +31,10 @@ export default function Schedule() {
       days.push({
         date: date,
         day: date.getDate(),
-        weekday: weekdaysShort[weekdayIndex],
+        weekday: weekdaysFull[weekdayIndex],
+        weekdayShort: weekdaysShort[weekdayIndex],
         offset: i,
+        isWeekend: weekdayIndex >= 5,
       });
     }
     return days;
@@ -46,14 +49,23 @@ export default function Schedule() {
     timeLabels.push({ hour, label: `${hour}:00` });
   }
 
-  const staff = [
+  // Mock data
+  const dayShiftWaiters = ['Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов'];
+  const dayShiftKitchen = [
+    'Павел Павлов',
+    'Павел Павлов',
+    'Павел Павлов',
+    'Павел Павлов',
+    'Павел Павлов',
     'Павел Павлов',
     'Павел Павлов',
     'Павел Павлов',
     'Павел Павлов',
   ];
+  const dayShiftRunners = ['Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов'];
 
-  const kitchenStaff = [
+  const eveningShiftWaiters = ['Павел Павлов', 'Павел Павлов', 'Иван Иванов', 'Павел Павлов'];
+  const eveningShiftKitchen = [
     'Павел Павлов',
     'Павел Павлов',
     'Павел Павлов',
@@ -64,13 +76,7 @@ export default function Schedule() {
     'Павел Павлов',
     'Павел Павлов',
   ];
-
-  const waiterStaffEvening = [
-    'Павел Павлов',
-    'Павел Павлов',
-    'Иван Иванов',
-    'Павел Павлов',
-  ];
+  const eveningShiftRunners = ['Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов'];
 
   const togglePosition = (id: string) => {
     setPositions(positions.map(pos => 
@@ -82,19 +88,19 @@ export default function Schedule() {
     setSelectedDateOffset(offset);
   };
 
-  // Get visible week days
+  // Get visible week days (7 days centered on selected)
   const visibleDays = allDays.slice(30 + selectedDateOffset - 3, 30 + selectedDateOffset + 4);
 
   const handleBackToHome = () => {
-    // Navigate back to home - handled by App.tsx state
     window.dispatchEvent(new CustomEvent('navigate-home'));
   };
 
   return (
     <div className="schedule-page">
+      {/* Header */}
       <div className="schedule-header">
         <button className="back-button" onClick={handleBackToHome}>
-          <svg fill="none" viewBox="0 0 24 24">
+          <svg fill="none" viewBox="0 0 24 24" width="24" height="24">
             <path
               d="M15 18L9 12L15 6"
               stroke="currentColor"
@@ -107,7 +113,10 @@ export default function Schedule() {
         <h1>Ноябрь</h1>
         <div className="header-actions">
           <button className="filters-button" onClick={() => setShowFilters(!showFilters)}>
-            Позиция
+            Фильтры
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
           <button className="export-button">
             Экспорт
@@ -128,21 +137,15 @@ export default function Schedule() {
                 <p className="filters-title">Позиция</p>
               </div>
               {positions.map(pos => (
-                <label key={pos.id} className="filter-item">
+                <button key={pos.id} className="filter-item" onClick={() => togglePosition(pos.id)}>
                   {pos.enabled && (
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path d="M13.5 4L6 11.5L2.5 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   )}
                   {!pos.enabled && <div className="checkbox-placeholder"></div>}
-                  <input
-                    type="checkbox"
-                    checked={pos.enabled}
-                    onChange={() => togglePosition(pos.id)}
-                    style={{ display: 'none' }}
-                  />
                   <span>{pos.name}</span>
-                </label>
+                </button>
               ))}
             </div>
           </div>
@@ -169,129 +172,103 @@ export default function Schedule() {
               onClick={() => handleDayClick(dayInfo.offset)}
             >
               <div className="day-number">{dayInfo.day}</div>
-              {isSelected && <div className="day-dot" />}
+              <div className="day-dot" />
             </div>
           );
         })}
       </div>
 
-      {/* Schedule - Scrollable */}
-      <div className="schedule-scroll-container">
-        <div className="schedule-with-time">
-          {/* Time column */}
-          <div className="time-column">
-            <div className="time-column-header"></div>
-            <div className="time-labels-vertical">
-              {timeLabels.map((time, index) => (
-                <div key={index} className="time-cell" style={{ height: '80px' }}>
-                  {time.label}
+      {/* Selected day display */}
+      <div className="selected-day-display">
+        {selectedDay.weekday} - {String(selectedDay.day).padStart(2, '0')}
+      </div>
+
+      {/* Schedule content */}
+      <div className="schedule-container">
+        {/* Time labels column */}
+        <div className="time-labels">
+          {timeLabels.map((time, index) => (
+            <div key={index} className="time-label">
+              {time.label}
+            </div>
+          ))}
+        </div>
+
+        {/* Shifts column */}
+        <div className="shifts-column">
+          {/* Day Shift: 9-15 */}
+          <div className="shift-block day-shift">
+            <div className="shift-title-container">
+              <h3 className="shift-title">СМЕНА - День</h3>
+              <p className="shift-time">9-15</p>
+            </div>
+
+            <div className="shift-positions">
+              {positions.find(p => p.id === 'waiters')?.enabled && (
+                <div className="position-section">
+                  <h4 className="position-title">Официанты</h4>
+                  {dayShiftWaiters.map((name, idx) => (
+                    <p key={idx} className="staff-name">{name}</p>
+                  ))}
                 </div>
-              ))}
+              )}
+
+              {positions.find(p => p.id === 'kitchen')?.enabled && (
+                <div className="position-section">
+                  <h4 className="position-title">Кухня</h4>
+                  {dayShiftKitchen.map((name, idx) => (
+                    <p key={idx} className="staff-name">{name}</p>
+                  ))}
+                </div>
+              )}
+
+              {positions.find(p => p.id === 'runners')?.enabled && (
+                <div className="position-section">
+                  <h4 className="position-title">Раннеры</h4>
+                  {dayShiftRunners.map((name, idx) => (
+                    <p key={idx} className="staff-name">{name}</p>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Schedule content */}
-          <div className="schedule-content-wrapper">
-            <div className="schedule-day-header">
-              {selectedDay.weekday} - {String(selectedDay.day).padStart(2, '0')}
+          {/* Evening Shift: 15-21 */}
+          <div className="shift-block evening-shift">
+            <div className="shift-title-container">
+              <h3 className="shift-title">СМЕНА - Вечер</h3>
+              <p className="shift-time">15-21</p>
             </div>
 
-            <div className="schedule-timeline">
-              {/* Background time grid */}
-              <div className="time-grid">
-                {timeLabels.map((_, index) => (
-                  <div key={index} className="time-grid-row" style={{ height: '80px' }}></div>
-                ))}
-              </div>
-
-              {/* Morning shift: 9:00-15:00 (rows 0-6) */}
-              <div className="shift-block-absolute morning-shift selected">
-                <div className="shift-separator">День</div>
-                <div className="shift-header">
-                  <h3>СМЕНА - День</h3>
-                  <p className="shift-time">9-15</p>
+            <div className="shift-positions">
+              {positions.find(p => p.id === 'waiters')?.enabled && (
+                <div className="position-section">
+                  <h4 className="position-title">Официанты</h4>
+                  {eveningShiftWaiters.map((name, idx) => (
+                    <p key={idx} className={`staff-name ${name === 'Иван Иванов' ? 'underlined' : ''}`}>
+                      {name}
+                    </p>
+                  ))}
                 </div>
+              )}
 
-                <div className="shift-content">
-                  {positions.find(p => p.id === 'waiters')?.enabled && (
-                    <div className="position-group">
-                      <h4>Официанты</h4>
-                      <div className="staff-grid">
-                        {staff.map((name, index) => (
-                          <p key={index} className="staff-name">{name}</p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {positions.find(p => p.id === 'kitchen')?.enabled && (
-                    <div className="position-group">
-                      <h4>Кухня</h4>
-                      <div className="staff-grid">
-                        {kitchenStaff.map((name, index) => (
-                          <p key={index} className="staff-name">{name}</p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {positions.find(p => p.id === 'runners')?.enabled && (
-                    <div className="position-group">
-                      <h4>Раннеры</h4>
-                      <div className="staff-grid">
-                        {staff.map((name, index) => (
-                          <p key={index} className="staff-name">{name}</p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+              {positions.find(p => p.id === 'kitchen')?.enabled && (
+                <div className="position-section">
+                  <h4 className="position-title">Кухня</h4>
+                  {eveningShiftKitchen.map((name, idx) => (
+                    <p key={idx} className="staff-name">{name}</p>
+                  ))}
                 </div>
-              </div>
+              )}
 
-              {/* Evening shift: 15:00-21:00 (rows 6-12) */}
-              <div className="shift-block-absolute evening-shift">
-                <div className="shift-header">
-                  <h3>СМЕНА - Вечер</h3>
-                  <p className="shift-time">15-21</p>
+              {positions.find(p => p.id === 'runners')?.enabled && (
+                <div className="position-section">
+                  <h4 className="position-title">Раннеры</h4>
+                  {eveningShiftRunners.map((name, idx) => (
+                    <p key={idx} className="staff-name">{name}</p>
+                  ))}
                 </div>
-
-                <div className="shift-content">
-                  {positions.find(p => p.id === 'waiters')?.enabled && (
-                    <div className="position-group">
-                      <h4>Официанты</h4>
-                      <div className="staff-grid">
-                        {waiterStaffEvening.map((name, index) => (
-                          <p key={index} className={`staff-name ${name === 'Иван Иванов' ? 'highlighted' : ''}`}>
-                            {name}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {positions.find(p => p.id === 'kitchen')?.enabled && (
-                    <div className="position-group">
-                      <h4>Кухня</h4>
-                      <div className="staff-grid">
-                        {kitchenStaff.map((name, index) => (
-                          <p key={index} className="staff-name">{name}</p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {positions.find(p => p.id === 'runners')?.enabled && (
-                    <div className="position-group">
-                      <h4>Раннеры</h4>
-                      <div className="staff-grid">
-                        {staff.map((name, index) => (
-                          <p key={index} className="staff-name">{name}</p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

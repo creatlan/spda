@@ -1,124 +1,231 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { LogOut, Pencil } from 'lucide-react';
 import './Profile.css';
 
 export default function Profile() {
-  const [name, setName] = useState('Иван Иванов');
-  const [position, setPosition] = useState('Официант');
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [isEditingPosition, setIsEditingPosition] = useState(false);
+  const navigate = useNavigate();
+  
+  const [language, setLanguage] = useState<'Русский' | 'Английский'>('Русский');
+  const [maxShifts, setMaxShifts] = useState(19);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [shiftRemindersEnabled, setShiftRemindersEnabled] = useState(true);
+  const [shiftReminderTimes, setShiftReminderTimes] = useState<number[]>([48, 24, 6]);
+  const [availabilityRemindersEnabled, setAvailabilityRemindersEnabled] = useState(true);
+  const [availabilityReminderTimes, setAvailabilityReminderTimes] = useState<number[]>([72, 24]);
 
-  const positions = ['Официант', 'Раннер', 'Кухня'];
-
-  const handleSaveName = () => {
-    setIsEditingName(false);
-    console.log('Name saved:', name);
+  const handleEditClick = () => {
+    navigate('/profile/edit');
   };
 
-  const handleSavePosition = () => {
-    setIsEditingPosition(false);
-    console.log('Position saved:', position);
+  const handleLogout = () => {
+    // TODO: Handle logout logic
+    console.log('Logging out...');
+  };
+
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'Русский' ? 'Английский' : 'Русский');
+  };
+
+  const incrementShifts = () => {
+    setMaxShifts(prev => prev + 1);
+  };
+
+  const decrementShifts = () => {
+    setMaxShifts(prev => Math.max(0, prev - 1));
+  };
+
+  const toggleShiftReminder = (hours: number) => {
+    setShiftReminderTimes(prev => 
+      prev.includes(hours) 
+        ? prev.filter(h => h !== hours)
+        : [...prev, hours]
+    );
+  };
+
+  const toggleAvailabilityReminder = (hours: number) => {
+    setAvailabilityReminderTimes(prev => 
+      prev.includes(hours) 
+        ? prev.filter(h => h !== hours)
+        : [...prev, hours]
+    );
   };
 
   return (
     <div className="profile-page">
       <div className="profile-header">
-        <h1>Профиль</h1>
+        <div className="profile-avatar">
+          <img 
+            src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=400&fit=crop" 
+            alt="Profile"
+          />
+        </div>
+        <div className="profile-info">
+          <h1>Иван Иванов</h1>
+          <p>Официант</p>
+        </div>
+        <button className="logout-btn" onClick={handleLogout}>
+          <LogOut size={20} />
+        </button>
       </div>
 
-      <div className="profile-content">
-        <div className="profile-avatar">
-          <svg fill="none" viewBox="0 0 80 80">
-            <circle cx="40" cy="40" r="40" fill="#e5e5ea" />
-            <path
-              d="M24 60V56C24 53.8783 24.8429 51.8434 26.3431 50.3431C27.8434 48.8429 29.8783 48 32 48H48C50.1217 48 52.1566 48.8429 53.6569 50.3431C55.1571 51.8434 56 53.8783 56 56V60"
-              stroke="#666666"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <circle
-              cx="40"
-              cy="32"
-              r="8"
-              stroke="#666666"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+      <button className="edit-btn" onClick={handleEditClick}>
+        Редактировать
+        <Pencil size={16} />
+      </button>
+
+      <div className="profile-section">
+        <div className="profile-field">
+          <span className="field-label">Код команды</span>
+          <div className="field-value not-specified">Не указан</div>
         </div>
 
-        <div className="profile-section">
-          <div className="profile-field">
-            <label>Имя</label>
-            {isEditingName ? (
-              <div className="edit-field">
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  autoFocus
-                />
-                <button className="save-button" onClick={handleSaveName}>
-                  Сохранить
-                </button>
-              </div>
-            ) : (
-              <div className="field-value" onClick={() => setIsEditingName(true)}>
-                <span>{name}</span>
-                <svg fill="none" viewBox="0 0 24 24">
-                  <path
-                    d="M9 18L15 12L9 6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            )}
-          </div>
-
-          <div className="profile-field">
-            <label>Позиция</label>
-            {isEditingPosition ? (
-              <div className="edit-field">
-                <select
-                  value={position}
-                  onChange={(e) => setPosition(e.target.value)}
-                  autoFocus
-                >
-                  {positions.map((pos) => (
-                    <option key={pos} value={pos}>
-                      {pos}
-                    </option>
-                  ))}
-                </select>
-                <button className="save-button" onClick={handleSavePosition}>
-                  Сохранить
-                </button>
-              </div>
-            ) : (
-              <div className="field-value" onClick={() => setIsEditingPosition(true)}>
-                <span>{position}</span>
-                <svg fill="none" viewBox="0 0 24 24">
-                  <path
-                    d="M9 18L15 12L9 6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            )}
+        <div className="profile-field">
+          <span className="field-label">Цвет</span>
+          <div className="color-picker">
+            <div className="color-indicator" />
           </div>
         </div>
 
-        <div className="profile-actions">
-          <button className="logout-button">
-            Выйти из аккаунта
-          </button>
+        <div className="profile-field">
+          <span className="field-label">Язык</span>
+          <div className="field-value" onClick={toggleLanguage}>{language} ›</div>
+        </div>
+
+        <div className="profile-field">
+          <span className="field-label">Макс. смен в месяц</span>
+          <div className="stepper">
+            <button className="stepper-btn" onClick={decrementShifts}>−</button>
+            <span className="stepper-value">{maxShifts}</span>
+            <button className="stepper-btn" onClick={incrementShifts}>+</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="profile-section">
+        <div className="profile-field">
+          <span className="field-label">Уведомления</span>
+          <div 
+            className={`toggle-switch ${notificationsEnabled ? 'active' : ''}`}
+            onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+          >
+            <div className="toggle-knob" />
+          </div>
+        </div>
+
+        <div className="profile-field time-field">
+          <span className="field-label secondary">Время</span>
+          <div className="time-range">
+            <span className="time-label">с</span>
+            <div className="time-picker">9:00</div>
+            <span className="time-label">до</span>
+            <div className="time-picker">22:00</div>
+          </div>
+        </div>
+
+        <div className="notifications-group">
+          <div className="profile-field">
+            <span className="field-label secondary">Напоминания о смене</span>
+            <div 
+              className={`toggle-switch ${shiftRemindersEnabled ? 'active' : ''}`}
+              onClick={() => setShiftRemindersEnabled(!shiftRemindersEnabled)}
+            >
+              <div className="toggle-knob" />
+            </div>
+          </div>
+
+          <div className="notification-buttons">
+            <button 
+              className={`notification-btn ${shiftReminderTimes.includes(72) ? 'active' : ''}`}
+              onClick={() => toggleShiftReminder(72)}
+            >
+              За 72 часа
+            </button>
+            <button 
+              className={`notification-btn ${shiftReminderTimes.includes(48) ? 'active' : ''}`}
+              onClick={() => toggleShiftReminder(48)}
+            >
+              За 48 часов
+            </button>
+            <button 
+              className={`notification-btn ${shiftReminderTimes.includes(24) ? 'active' : ''}`}
+              onClick={() => toggleShiftReminder(24)}
+            >
+              За 24 часа
+            </button>
+            <button 
+              className={`notification-btn ${shiftReminderTimes.includes(12) ? 'active' : ''}`}
+              onClick={() => toggleShiftReminder(12)}
+            >
+              За 12 часов
+            </button>
+            <button 
+              className={`notification-btn ${shiftReminderTimes.includes(6) ? 'active' : ''}`}
+              onClick={() => toggleShiftReminder(6)}
+            >
+              За 6 часов
+            </button>
+            <button 
+              className={`notification-btn ${shiftReminderTimes.includes(1) ? 'active' : ''}`}
+              onClick={() => toggleShiftReminder(1)}
+            >
+              За 1 час
+            </button>
+          </div>
+        </div>
+
+        <div className="notifications-group">
+          <div className="profile-field-column">
+            <div className="profile-field">
+              <span className="field-label secondary">Напоминания о занятости</span>
+              <div 
+                className={`toggle-switch ${availabilityRemindersEnabled ? 'active' : ''}`}
+                onClick={() => setAvailabilityRemindersEnabled(!availabilityRemindersEnabled)}
+              >
+                <div className="toggle-knob" />
+              </div>
+            </div>
+            <p className="field-note">(до начала составления графика)</p>
+          </div>
+
+          <div className="notification-buttons">
+            <button 
+              className={`notification-btn ${availabilityReminderTimes.includes(72) ? 'active' : ''}`}
+              onClick={() => toggleAvailabilityReminder(72)}
+            >
+              За 72 часа
+            </button>
+            <button 
+              className={`notification-btn ${availabilityReminderTimes.includes(48) ? 'active' : ''}`}
+              onClick={() => toggleAvailabilityReminder(48)}
+            >
+              За 48 часов
+            </button>
+            <button 
+              className={`notification-btn ${availabilityReminderTimes.includes(24) ? 'active' : ''}`}
+              onClick={() => toggleAvailabilityReminder(24)}
+            >
+              За 24 часа
+            </button>
+            <button 
+              className={`notification-btn ${availabilityReminderTimes.includes(12) ? 'active' : ''}`}
+              onClick={() => toggleAvailabilityReminder(12)}
+            >
+              За 12 часов
+            </button>
+            <button 
+              className={`notification-btn ${availabilityReminderTimes.includes(6) ? 'active' : ''}`}
+              onClick={() => toggleAvailabilityReminder(6)}
+            >
+              За 6 часов
+            </button>
+            <button 
+              className={`notification-btn ${availabilityReminderTimes.includes(1) ? 'active' : ''}`}
+              onClick={() => toggleAvailabilityReminder(1)}
+            >
+              За 1 час
+            </button>
+          </div>
         </div>
       </div>
     </div>

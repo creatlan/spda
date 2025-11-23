@@ -73,171 +73,347 @@
 ### 2. Availability (Занятость)
 
 #### GET /api/availability
-Получить статус занятости пользователя
+## API Integration — объединённая документация
 
-**Параметры запроса:**
-```
-?startDate=2024-11-01&endDate=2024-11-30
-```
-
-**Ответ:**
-```typescript
-{
-  availability: {
-    [dateKey: string]: {
-      morning: null | 'free' | 'inconvenient' | 'unavailable' | 'shift-day' | 'shift-evening',
-      evening: null | 'free' | 'inconvenient' | 'unavailable' | 'shift-day' | 'shift-evening'
-    }
-  }
-}
-```
-
-**Где используется:**
-- `pages/Availability.tsx` (строка 32-33)
+Ниже объединённая и вычищенная версия двух существующих документов `api-integration.md`.
+Она покрывает базовый URL, аутентификацию, все используемые endpoints, формат ответов, примеры запросов и TODO для интеграции.
 
 ---
 
-#### PUT /api/availability
-Обновить статус занятости
+## Base URL
 
-**Тело запроса:**
-```typescript
-{
-  date: '2024-11-22',
-  time: 'morning', // 'morning' | 'evening'
-  status: 'free' // null | 'free' | 'inconvenient' | 'unavailable' | 'shift-day' | 'shift-evening'
-}
+По умолчанию используйте переменную окружения (пример):
+
+```
+https://api.workplan.example.com/v1
 ```
 
-**Ответ:**
-```typescript
-{
-  success: boolean,
-  message: string
-}
-```
+## Authentication
 
-**Где используется:**
-- `pages/Availability.tsx` (строка 167-169)
+Все защищённые запросы требуют заголовок Bearer токена:
+
+```
+Authorization: Bearer {token}
+```
 
 ---
 
-### 3. Schedule (График)
+## Endpoints (обзор)
 
-#### GET /api/schedule
-Получить расписание на день со всеми сотрудниками
+1) История смен
+2) Смены (календарь, следующая, поиск замены)
+3) Статистика текущего месяца
+4) Занятость (availability)
+5) График (schedule)
+6) Профиль и аутентификация
 
-**Параметры запроса:**
-```
-?date=2024-11-22
-```
+Ниже — подробности по каждому из них.
 
-**Ответ:**
-```typescript
+---
+
+### 1. История смен
+
+#### GET /api/history/all-time
+Возвращает общую статистику пользователя за всё время.
+
+Response:
+```json
 {
-  date: '2024-11-22',
-  shifts: [
-    {
-      type: 'morning', // 'morning' | 'evening'
-      startTime: '9:00',
-      endTime: '15:00',
-      positions: {
-        waiters: ['Павел Павлов', 'Иван Иванов'],
-        runners: ['Павел Павлов'],
-        kitchen: ['Павел Павлов', 'Сергей Сергеев']
-      }
-    },
-    {
-      type: 'evening',
-      startTime: '15:00',
-      endTime: '21:00',
-      positions: {
-        waiters: ['Павел Павлов', 'Иван Иванов'],
-        runners: ['Павел Павлов'],
-        kitchen: ['Павел Павлов']
-      }
-    }
+  "totalShifts": 30,
+  "totalHours": 240,
+  "totalEarnings": 34075,
+  "dayShifts": 18,
+  "dayHours": 144,
+  "dayEarnings": 14075,
+  "nightShifts": 12,
+  "nightHours": 96,
+  "nightEarnings": 14075
+}
+```
+
+Используется в: `HistoryModal.tsx` — чёрная карточка «Всего».
+
+----
+
+#### GET /api/history/month?month={0-11}&year={YYYY}
+Возвращает статистику и список смен за указанный месяц.
+
+Response:
+```json
+{
+  "totalShifts": 9,
+  "totalHours": 72,
+  "totalEarnings": 24075,
+  "dayShifts": 5,
+  "dayHours": 40,
+  "dayEarnings": 14075,
+  "nightShifts": 4,
+  "nightHours": 32,
+  "nightEarnings": 14000,
+  "shifts": [
+    { "date": "01.11.2024", "type": "day", "hours": 6, "earnings": 4075 },
+    { "date": "03.11.2024", "type": "day", "hours": 6, "earnings": 1075 },
+    { "date": "04.11.2024", "type": "night", "hours": 6, "earnings": 4075 }
   ]
 }
 ```
 
-**Где используется:**
-- `pages/Schedule.tsx` (TODO: добавить useEffect для загрузки)
+Используется в: `HistoryModal.tsx` — белая карточка месяца + список смен.
 
 ---
 
-### 4. Profile (Профиль)
+### 2. Смены (календарь)
+
+#### GET /api/shifts?month={0-11}&year={YYYY}
+Возвращает смены пользователя для календаря (ключи — даты в формате YYYY-MM-DD или YYYY-M-D).
+
+Response пример:
+```json
+{
+  "2024-10-15": "day",
+  "2024-10-16": "night",
+  "2024-10-17": "day"
+}
+```
+
+Формат: Key — `"YYYY-M-D"`, Value — `"day" | "night" | null`.
+
+Используется в: `pages/Home.tsx` — иконки смен в календаре.
+
+----
+
+#### GET /api/shifts/next
+Информация о следующей предстоящей смене.
+
+Response:
+```json
+{
+  "date": "08.11.2024",
+  "startTime": "15:00",
+  "endTime": "21:00",
+  "type": "night",
+  "position": "Официант"
+}
+```
+
+Используется в: `Home.tsx` — карточка «Следующая смена».
+
+----
+
+#### POST /api/shifts/find-replacement
+Запрос на поиск замены для смены.
+
+Request body:
+```json
+{ "shiftId": "shift-123", "reason": "Не могу выйти" }
+```
+
+Response:
+```json
+{ "success": true, "message": "Запрос на замену отправлен", "requestId": "request-456" }
+```
+
+Используется в: `Home.tsx` и `ConfirmModal` (кнопка «Найти замену»).
+
+---
+
+### 3. Статистика текущего месяца
+
+#### GET /api/stats/current-month
+Краткая статистика для карточек на главной.
+
+Response:
+```json
+{ "totalShifts": 9, "dayShifts": 5, "nightShifts": 4, "totalEarnings": 973, "todayEarnings": 173 }
+```
+
+Используется в: `Home.tsx` — карточки статистики.
+
+---
+
+### 4. Занятость (Availability)
+
+#### GET /api/availability?startDate={YYYY-MM-DD}&days={N}
+Возвращает статусы занятости на N дней вперед.
+
+Response пример:
+```json
+{
+  "2024-11-23": { "morning": "free", "afternoon": "inconvenient", "evening": "unavailable" },
+  "2024-11-24": { "morning": "shift-day", "afternoon": "free", "evening": "shift-evening" }
+}
+```
+
+Значения статусов: `null`, `free`, `inconvenient`, `unavailable`, `shift-day`, `shift-evening`.
+
+Используется в: `pages/Availability.tsx`.
+
+----
+
+#### PUT /api/availability
+Обновление статуса занятости.
+
+Request body:
+```json
+{ "date": "2024-11-23", "timeSlot": "morning", "status": "free" }
+```
+
+Response:
+```json
+{ "success": true, "message": "Статус обновлен" }
+```
+
+Используется в: `Availability.tsx` (контекстное меню).
+
+---
+
+### 5. График смен (Schedule)
+
+#### GET /api/schedule/day?date={YYYY-MM-DD}
+Возвращает расписание всех сотрудников на выбранный день.
+
+Response (пример):
+```json
+{
+  "date": "2024-11-23",
+  "shifts": {
+    "morning": [ { "staffId": "staff-1", "name": "Иван Иванов", "position": "Официант", "startTime": "09:00", "endTime": "15:00" } ],
+    "evening": [ { "staffId": "staff-3", "name": "Петр Сидоров", "position": "Официант", "startTime": "15:00", "endTime": "21:00" } ]
+  }
+}
+```
+
+Используется в: `pages/Schedule.tsx`.
+
+---
+
+### 6. Профиль и аутентификация
 
 #### GET /api/profile
-Получить данные профиля пользователя
+Возвращает данные текущего пользователя.
 
-**Ответ:**
-```typescript
-{
-  id: string,
-  name: string,
-  position: 'Официант' | 'Раннер' | 'Кухня'
-}
+Response пример:
+```json
+{ "userId": "user-123", "name": "Иван Иванов", "position": "Официант", "email": "ivan@example.com", "phone": "+7 (999) 123-45-67" }
 ```
 
-**Где используется:**
-- `pages/Profile.tsx` (TODO: добавить useEffect)
+Используется в: `Profile.tsx`.
 
----
+----
 
 #### PUT /api/profile
-Обновить данные профиля
+Обновление данных профиля.
 
-**Тело запроса:**
-```typescript
-{
-  name?: string,
-  position?: 'Официант' | 'Раннер' | 'Кухня'
-}
+Request body (пример):
+```json
+{ "name": "Иван Иванов", "position": "Хостес" }
 ```
 
-**Ответ:**
-```typescript
-{
-  success: boolean,
-  message: string
-}
+Response (пример):
+```json
+{ "success": true, "message": "Профиль обновлен", "profile": { "userId": "user-123", "name": "Иван Иванов", "position": "Хостес", "email": "ivan@example.com", "phone": "+7 (999) 123-45-67" } }
 ```
 
-**Где используется:**
-- `pages/Profile.tsx` (строки 16, 22)
+----
+
+#### POST /api/auth/logout
+Выход из системы.
+
+Response:
+```json
+{ "success": true, "message": "Выход выполнен" }
+```
+
+Используется в: `Profile.tsx` (handleLogout).
 
 ---
 
-## Статусы занятости
+## Error Handling и коды ответа
 
+Формат ошибок:
+```json
+{ "success": false, "error": { "code": "ERROR_CODE", "message": "Описание ошибки" } }
+```
+
+Основные HTTP коды:
+- 200 — OK
+- 400 — Bad Request (валидация)
+- 401 — Unauthorized
+- 403 — Forbidden
+- 404 — Not Found
+- 500 — Internal Server Error
+
+---
+
+## Примеры использования (в коде)
+
+GET пример (fetch):
 ```typescript
+const fetchMonthHistory = async (month: number, year: number) => {
+  const response = await fetch(`/api/history/month?month=${month}&year=${year}`, {
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+  });
+  if (!response.ok) throw new Error('Failed to fetch history');
+  return response.json();
+};
+```
+
+POST пример (fetch):
+```typescript
+const requestReplacement = async (shiftId: string, reason: string) => {
+  const response = await fetch('/api/shifts/find-replacement', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ shiftId, reason })
+  });
+  if (!response.ok) throw new Error('Failed to request replacement');
+  return response.json();
+};
+```
+
+---
+
+## Статусы занятости и цветовая схема (UI)
+
+Тип статуса:
+```ts
 type AvailabilityStatus = null | 'free' | 'inconvenient' | 'unavailable' | 'shift-day' | 'shift-evening';
-
-// null - не отмечено (пустое поле)
-// 'free' - Свободен (белый фон, черный текст)
-// 'inconvenient' - Неудобно, но могу выйти (светло-серый #F2F2F7, черный текст)
-// 'unavailable' - Не могу выйти (серый #E5E5EA, черный текст)
-// 'shift-day' - Смена День (темно-серый #D1D1D6, черный текст)
-// 'shift-evening' - Смена Вечер (черный #2D2D2D, белый текст)
 ```
 
-## Цветовая схема
-
+Цвета (примеры переменных):
 ```css
---background-dark: #2D2D2D;    /* Темный фон */
---gray-heavy: #D1D1D6;         /* Серый тяжелый (смена день) */
---gray-light: #F2F2F7;         /* Серый легкий (неудобно) */
---gray-medium: #E5E5EA;        /* Серый средний (не могу) */
---white: #FFFFFF;              /* Белый (свободен) */
---green: #34C759;              /* Зеленый (заработок) */
---red: #FF3B30;                /* Красный (найти замену) */
+:root {
+  --background-dark: #2D2D2D;
+  --gray-heavy: #D1D1D6;
+  --gray-light: #F2F2F7;
+  --gray-medium: #E5E5EA;
+  --white: #FFFFFF;
+  --green: #34C759;
+  --red: #FF3B30;
+}
 ```
 
-## Следующие шаги для backend интеграции
+---
 
-1. Раскомментировать TODO блоки в коде
-2. Заменить demo данные на реальные API вызовы
-3. Добавить обработку ошибок и loading состояний
-4. Добавить аутентификацию (JWT токены)
-5. Настроить CORS для API
+## TODO: интеграция с реальным backend
+
+Необходимо:
+1. Раскомментировать TODO в коде и заменить mock-данные на реальные вызовы.
+2. Добавить обработку ошибок и loading-состояний.
+3. Настроить передачу токена авторизации (JWT) и безопасное хранение.
+4. Настроить retry/timeout логику для нестабильных запросов.
+5. Вынести `baseURL` в environment variables (`.env`).
+
+Файлы с TODO-комментариями (ориентировочно):
+- `HistoryModal.tsx` — строки с TODO
+- `Home.tsx` — строки 17-25, 103-104
+- `Availability.tsx` — TODO: добавить вызовы API
+- `Schedule.tsx` — TODO: добавить useEffect для загрузки
+- `Profile.tsx` / `ProfileEdit.tsx` — TODO: подключить GET/PUT
+
+---
+
+Если нужно, могу:
+- добавить примеры интеграции через `fetch`/`axios`/RTK Query;
+- создать небольшую обёртку `apiClient` с обработкой ошибок и автоматической подстановкой `baseURL` и `Authorization`;
+- вынести типы интерфейсов TypeScript для ответов в `src/types/api.ts`.

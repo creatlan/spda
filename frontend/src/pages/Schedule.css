@@ -1,17 +1,16 @@
 .schedule-page {
   min-height: 100vh;
   background: #ffffff;
-  display: flex;
-  flex-direction: column;
+  padding-bottom: 80px;
 }
 
+/* Header */
 .schedule-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px;
   background: #ffffff;
-  flex-shrink: 0;
 }
 
 .back-button {
@@ -42,22 +41,30 @@
 .header-actions {
   display: flex;
   gap: 8px;
+  align-items: center;
 }
 
 .filters-button,
 .export-button {
-  padding: 8px 16px;
+  background: rgba(120, 120, 128, 0.16);
   border: none;
   border-radius: 16px;
+  padding: 8px 12px;
   font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 510;
+  color: #000000;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: -0.43px;
 }
 
-.filters-button {
-  background: rgba(120, 120, 128, 0.16);
-  color: #000000;
+.filters-button svg {
+  transform: rotate(270deg);
+  width: 20px;
+  height: 20px;
 }
 
 .export-button {
@@ -65,25 +72,26 @@
   color: #ffffff;
 }
 
-/* Filters - Liquid Glass */
+/* Filters Modal - Liquid Glass */
 .filters-overlay-liquid {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 1000;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding: 70px 16px;
+  align-items: center;
+  justify-content: center;
 }
 
 .filters-modal-liquid {
   position: relative;
   border-radius: 26px;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  min-width: 220px;
 }
 
 .filters-blur-container {
@@ -110,14 +118,13 @@
   position: absolute;
   inset: 0;
   border-radius: 26px;
-  background: rgba(245, 245, 245, 0.85);
-  backdrop-filter: blur(40px) saturate(180%);
+  background: rgba(245, 245, 245, 0.95);
+  backdrop-filter: blur(40px);
 }
 
 .filters-content {
   position: relative;
   padding: 8px 0;
-  min-width: 200px;
 }
 
 .filters-section {
@@ -137,6 +144,7 @@
   width: 100%;
   padding: 12px 16px;
   background: transparent;
+  border: none;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -144,6 +152,8 @@
   font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 16px;
   color: #000000;
+  text-align: left;
+  transition: background 0.2s;
 }
 
 .filter-item:hover {
@@ -168,18 +178,18 @@
 .week-header {
   display: flex;
   justify-content: space-between;
-  padding: 0 16px;
-  margin: 12px 0;
-  flex-shrink: 0;
+  padding: 0 8px;
+  margin: 20px 0 4px;
 }
 
 .week-day {
   font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 590;
   color: #000000;
   text-align: center;
-  flex: 1;
+  width: 40px;
+  letter-spacing: -0.08px;
 }
 
 .week-day.weekend {
@@ -189,23 +199,24 @@
 /* Days selector */
 .days-selector {
   display: flex;
-  justify-content: space-around;
-  padding: 0 16px;
-  margin-bottom: 16px;
-  flex-shrink: 0;
+  justify-content: space-between;
+  padding: 0 8px;
+  margin-bottom: 8px;
 }
 
 .day-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  transition: background 0.2s;
 }
 
-.day-item.selected .day-number {
-  background: #8e8e93;
-  color: #ffffff;
+.day-item:hover {
+  background: #f2f2f7;
 }
 
 .day-number {
@@ -218,6 +229,12 @@
   font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 20px;
   color: #000000;
+  letter-spacing: -0.45px;
+}
+
+.day-item.selected .day-number {
+  background: #8e8e93;
+  color: #ffffff;
 }
 
 .day-dot {
@@ -225,190 +242,177 @@
   height: 4px;
   border-radius: 50%;
   background: rgba(60, 60, 67, 0.6);
+  opacity: 0;
 }
 
-/* Schedule Scrollable Container */
-.schedule-main {
-  flex: 1;
-  overflow-y: auto;
-  padding-bottom: 16px;
+.day-item.selected .day-dot {
+  opacity: 1;
+  background: #ffffff;
 }
 
-.schedule-main::-webkit-scrollbar {
-  display: none;
-}
-
-.schedule-with-time {
-  display: flex;
-  min-height: 960px; /* 12 hours * 80px (9:00-21:00) */
-}
-
-/* Time Column */
-.time-column {
-  flex-shrink: 0;
-  width: 50px;
-  display: flex;
-  flex-direction: column;
-}
-
-.time-column-header {
-  height: 36px;
-  flex-shrink: 0;
-  border-bottom: 1px solid #e5e5ea;
-}
-
-.time-labels-vertical {
-  flex: 1;
-}
-
-.time-cell {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding-right: 8px;
-  padding-top: 4px;
-  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 13px;
-  color: #999999;
-  border-bottom: 1px solid #f2f2f7;
-}
-
-/* Schedule Content */
-.schedule-content-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.schedule-day-header {
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Selected day display */
+.selected-day-display {
   background: #ffffff;
   border: 0.5px solid #e5e5ea;
   border-radius: 8px 8px 0 0;
+  padding: 8px 16px;
+  margin: 0 16px;
+  text-align: center;
   font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 17px;
-  font-weight: 600;
+  font-weight: 590;
   color: #000000;
+  letter-spacing: -0.43px;
+}
+
+/* Schedule container */
+.schedule-container {
+  display: flex;
+  padding: 0 16px;
+  gap: 12px;
+}
+
+/* Time labels */
+.time-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 51px;
+  width: 35px;
   flex-shrink: 0;
 }
 
-.schedule-timeline {
-  position: relative;
-  flex: 1;
-  border: 0.5px solid #e5e5ea;
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-}
-
-.time-grid {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.time-grid-row {
-  border-bottom: 1px solid #f2f2f7;
-}
-
-/* Shift Blocks - Positioned Absolutely */
-.shift-block-absolute {
-  position: absolute;
-  left: 0;
-  right: 0;
-  background: #f2f2f7;
-  border-left: 4px solid #2d2d2d;
-  padding: 12px 8px;
-  overflow-y: auto;
-}
-
-.morning-shift {
-  top: 0;
-  height: 480px; /* 6 hours * 80px */
-  border-left: 4px solid #000000;
-  border-radius: 16px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
-.evening-shift {
-  top: 480px;
-  height: 480px; /* 6 hours * 80px (15:00-21:00) */
-  border-radius: 16px;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
-
-.shift-separator {
-  position: absolute;
-  top: -24px;
-  left: 12px;
+.time-label {
   font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 13px;
-  font-weight: 600;
-  color: #8e8e93;
-  display: none;
+  color: #999999;
+  text-align: center;
+  letter-spacing: -0.08px;
+  line-height: 13px;
 }
 
-.shift-header {
-  padding: 12px;
+/* Shifts column */
+.shifts-column {
+  flex: 1;
+  position: relative;
+}
+
+/* Shift block */
+.shift-block {
+  border-radius: 8px;
+  padding: 10px 12px 10px 12px;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  overflow: hidden;
 }
 
-.shift-header h3 {
-  margin: 0 0 4px;
+.shift-block.day-shift {
+  background: #f2f2f7;
+  top: 0;
+  height: 408px;
+}
+
+.shift-block.evening-shift {
+  background: #d1d1d6;
+  top: 416px;
+  height: 408px;
+}
+
+/* Shift title */
+.shift-title-container {
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.shift-title {
+  margin: 0;
   font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 590;
   color: #000000;
+  letter-spacing: -0.23px;
+  line-height: 20px;
 }
 
 .shift-time {
-  margin: 0;
+  margin: 2px 0 0 0;
   font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 590;
+  color: #000000;
+  letter-spacing: -0.08px;
+  line-height: 18px;
+}
+
+.shift-block.day-shift .shift-time {
   color: #333333;
 }
 
-.shift-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.position-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.position-group h4 {
-  margin: 0 0 8px;
-  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  color: #000000;
-}
-
-.staff-grid {
+/* Shift positions */
+.shift-positions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px 12px;
+  gap: 8px;
+  margin-top: 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Custom scrollbar styling */
+.shift-positions::-webkit-scrollbar {
+  width: 3px;
+}
+
+.shift-positions::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.shift-positions::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.shift-positions::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* Firefox scrollbar */
+.shift-positions {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+}
+
+.position-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.position-title {
+  margin: 0 0 2px 0;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  font-weight: 590;
+  color: #000000;
+  letter-spacing: -0.23px;
+  line-height: 1.3;
 }
 
 .staff-name {
   margin: 0;
   font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 15px;
+  font-weight: 400;
   color: rgba(60, 60, 67, 0.6);
-  line-height: 1.3;
+  letter-spacing: -0.23px;
+  line-height: 1.25;
 }
 
-.staff-name.highlighted {
+.staff-name.underlined {
   text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
