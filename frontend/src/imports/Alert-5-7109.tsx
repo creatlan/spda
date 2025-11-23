@@ -41,7 +41,7 @@ function TitleAndDescription() {
         <div className="box-border content-stretch flex flex-col gap-[10px] items-center pb-[24px] pt-[8px] px-[8px] relative w-full">
           <div className="flex flex-col font-['SF_Pro:Semibold',sans-serif] font-[590] justify-center leading-[0] relative shrink-0 text-[20px] text-black text-center tracking-[-0.45px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
             <p className="leading-[25px]">
-              Вы действительно не сможете
+              сможете
               <br aria-hidden="true" />и хотите найти замену?
             </p>
           </div>

@@ -2186,19 +2186,12 @@
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   z-index: 10000;
-  background: #0006;
   justify-content: center;
   align-items: center;
   padding: 20px;
   display: flex;
   position: fixed;
   inset: 0;
-}
-
-.modal-container {
-  width: 100%;
-  max-width: 330px;
-  position: relative;
 }
 
 .modal-alert {
@@ -2231,17 +2224,6 @@
   inset: 76px;
 }
 
-.modal-blur {
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  filter: blur(20px);
-  mix-blend-mode: hard-light;
-  background: #00000014;
-  border-radius: 34px;
-  position: absolute;
-  inset: 31px 26px 21px;
-}
-
 .modal-fill, .modal-fill-overlay {
   pointer-events: none;
   border-radius: 34px;
@@ -2258,7 +2240,7 @@
 }
 
 .modal-fill-bg {
-  background: #f5f5f580;
+  background: #f5f5f5;
   border-radius: 34px;
   position: absolute;
   inset: 0;
@@ -2367,9 +2349,6 @@
   inset: 0;
 }
 
-.history-modal-overlay.open {
-  background: #0006;
-}
 
 .history-modal {
   background: #f2f2f7;
@@ -2877,33 +2856,12 @@ html {
   inherits: false
 }
 
-/* virtual-fs:file:///components/ConfirmModal.css */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  padding: 20px;
-}
 .modal-container {
   width: 100%;
   max-width: 330px;
   position: relative;
 }
-.modal-alert {
-  position: relative;
-  width: 100%;
-  border-radius: 34px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 14px;
-  gap: 10px;
-}
+
 .modal-blur-wrapper {
   position: absolute;
   inset: -26px;
@@ -2948,12 +2906,7 @@ html {
   background: #0f0f0f;
   mix-blend-mode: color-dodge;
 }
-.modal-fill-bg {
-  position: absolute;
-  inset: 0;
-  border-radius: 34px;
-  background: rgba(245, 245, 245, 0.5);
-}
+
 .modal-glass {
   position: absolute;
   inset: 0;
@@ -3045,20 +2998,6 @@ html {
   white-space: nowrap;
 }
 
-/* virtual-fs:file:///components/HistoryModal.css */
-.history-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0);
-  z-index: 9999;
-  transition: background 0.3s ease;
-}
-.history-modal-overlay.open {
-  background: rgba(0, 0, 0, 0.4);
-}
 .history-modal {
   position: fixed;
   left: 0;

@@ -17,9 +17,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
         <div className="modal-alert">
           {/* Blur effect */}
           <div className="modal-blur-wrapper">
-            <div className="modal-mask">
               <div className="modal-mask-inner" />
-            </div>
             <div className="modal-blur" />
           </div>
 
