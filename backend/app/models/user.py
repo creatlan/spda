@@ -14,3 +14,4 @@ class User(Base):
     phone = Column(String, nullable=True)
     password_hash = Column(String, nullable=False)  # For future auth implementation
 
+

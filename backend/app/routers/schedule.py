@@ -63,3 +63,4 @@ async def get_day_schedule(
         }
     }
 
+

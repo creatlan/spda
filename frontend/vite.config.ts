@@ -52,6 +52,12 @@
     build: {
       target: 'esnext',
       outDir: 'build',
+      rollupOptions: {
+        input: {
+          main: './index.html',
+          dashboard: './dashboard.html',
+        },
+      },
     },
     server: {
       port: 3000,

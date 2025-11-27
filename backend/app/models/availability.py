@@ -20,3 +20,4 @@ class Availability(Base):
         {"sqlite_autoincrement": True},
     )
 
+

@@ -4,3 +4,4 @@ from app.models.availability import Availability
 
 __all__ = ["User", "Shift", "ReplacementRequest", "Availability"]
 
+

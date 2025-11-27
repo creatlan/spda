@@ -51,3 +51,4 @@ async def get_current_month_stats(
         "todayEarnings": today_earnings
     }
 
+

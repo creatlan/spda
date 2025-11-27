@@ -17,7 +17,8 @@ from app.routers import (
     history,
     stats,
     availability,
-    schedule
+    schedule,
+    metrics
 )
 
 # Load environment variables
@@ -53,6 +54,7 @@ app.include_router(history.router, prefix="/api/history", tags=["History"])
 app.include_router(stats.router, prefix="/api/stats", tags=["Statistics"])
 app.include_router(availability.router, prefix="/api/availability", tags=["Availability"])
 app.include_router(schedule.router, prefix="/api/schedule", tags=["Schedule"])
+app.include_router(metrics.router, prefix="/api/metrics", tags=["Metrics"])
 
 @app.get("/")
 async def root():
@@ -81,4 +83,5 @@ if __name__ == "__main__":
         port=int(os.getenv("PORT", 8000)),
         reload=os.getenv("DEBUG", "False").lower() == "true"
     )
+
 
