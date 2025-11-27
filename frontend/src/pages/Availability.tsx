@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import ConfirmModal from '../components/ConfirmModal';
+import { apiDelete, apiGet, apiPost, apiPut } from '../utils/api';
 import './Availability.css';
 
 type AvailabilityStatus = null | 'free' | 'inconvenient' | 'unavailable' | 'shift-day' | 'shift-evening';
@@ -21,6 +22,7 @@ export default function Availability() {
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const [contextMenuSlot, setContextMenuSlot] = useState<{ date: Date; time: 'morning' | 'evening' } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
   // Store availability data - will be fetched from backend
   // TODO: Replace with API call to GET /api/availability
@@ -42,11 +44,69 @@ export default function Availability() {
     return days;
   };
 
+  const mapAvailabilityResponse = (response: unknown): AvailabilityData => {
+    const mapped: AvailabilityData = {};
+
+    if (Array.isArray(response)) {
+      response.forEach((entry: any) => {
+        if (!entry?.date) return;
+        const dateKey = entry.date as string;
+        const timeSlot = (entry.timeSlot || entry.time || '').toLowerCase();
+        if (!mapped[dateKey]) {
+          mapped[dateKey] = { morning: null, evening: null };
+        }
+        if (timeSlot === 'morning' || timeSlot === 'afternoon') {
+          mapped[dateKey].morning = entry.status as AvailabilityStatus;
+        }
+        if (timeSlot === 'evening') {
+          mapped[dateKey].evening = entry.status as AvailabilityStatus;
+        }
+      });
+    } else if (response && typeof response === 'object') {
+      Object.entries(response as Record<string, any>).forEach(([dateKey, slots]) => {
+        mapped[dateKey] = {
+          morning: (slots as any).morning ?? (slots as any).afternoon ?? null,
+          evening: (slots as any).evening ?? null,
+        };
+      });
+    }
+
+    return mapped;
+  };
+
+  const persistAvailability = async (dateKey: string, time: 'morning' | 'evening', status: AvailabilityStatus) => {
+    await apiPut('/api/availability', {
+      date: dateKey,
+      timeSlot: time,
+      status,
+    });
+  };
+
+  const removeAvailability = async (dateKey: string, time: 'morning' | 'evening') => {
+    await apiDelete(`/api/availability?date=${encodeURIComponent(dateKey)}&timeSlot=${time}`);
+  };
+
+  const loadAvailability = async () => {
+    try {
+      const startDate = getDateKey(today);
+      const response = await apiGet<unknown>(`/api/availability?startDate=${startDate}&days=30`);
+      setAvailabilityData(mapAvailabilityResponse(response));
+      setError(null);
+    } catch (err) {
+      console.error('Failed to load availability', err);
+      setError('Не удалось загрузить занятость');
+    }
+  };
+
   const allDays = generateInfiniteDays();
+
+  useEffect(() => {
+    loadAvailability();
+  }, []);
   const visibleDays = allDays.slice(30 + selectedDateOffset - 3, 30 + selectedDateOffset + 4);
 
   const getDateKey = (date: Date) => {
-    return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    return date.toISOString().split('T')[0];
   };
 
   const getSchedule = (date: Date) => {
@@ -147,18 +207,28 @@ export default function Availability() {
     setIsModalOpen(true);
   };
 
-  const handleConfirmReplacement = () => {
+  const handleConfirmReplacement = async () => {
     setIsModalOpen(false);
-    // TODO: API call to POST /api/shifts/find-replacement
-    console.log('Finding replacement for:', selectedSlot);
+    if (!selectedSlot) return;
+
+    try {
+      await apiPost('/api/shifts/find-replacement', {
+        date: getDateKey(selectedSlot.date),
+        time: selectedSlot.time === 'evening' ? 'evening' : 'morning',
+      });
+    } catch (err) {
+      console.error('Failed to request replacement', err);
+      setError('Не удалось отправить запрос на замену');
+    }
+
     setSelectedSlot(null);
   };
 
-  const handleStatusSelect = (status: AvailabilityStatus) => {
+  const handleStatusSelect = async (status: AvailabilityStatus) => {
     if (contextMenuSlot) {
       const key = getDateKey(contextMenuSlot.date);
       const currentData = availabilityData[key] || { morning: null, evening: null };
-      
+
       setAvailabilityData({
         ...availabilityData,
         [key]: {
@@ -167,8 +237,21 @@ export default function Availability() {
         }
       });
 
-      // TODO: API call to PUT /api/availability
-      // body: { date: key, time: contextMenuSlot.time, status }
+      try {
+        if (status === null) {
+          await removeAvailability(key, contextMenuSlot.time);
+        } else {
+          await persistAvailability(key, contextMenuSlot.time, status);
+        }
+      } catch (err) {
+        console.error('Failed to update availability', err);
+        setError('Не удалось обновить занятость');
+        // Revert optimistic update
+        setAvailabilityData(current => ({
+          ...current,
+          [key]: currentData,
+        }));
+      }
     }
     setShowContextMenu(false);
     setContextMenuSlot(null);
@@ -239,6 +322,8 @@ export default function Availability() {
         </button>
         <h1>Ноябрь</h1>
       </div>
+
+      {error && <div className="error-banner">{error}</div>}
 
       {/* Days selector with infinite scroll */}
       <div className="days-selector-container">

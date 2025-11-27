@@ -1,11 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Pencil } from 'lucide-react';
+import { apiGet, apiPost } from '../utils/api';
 import './Profile.css';
+
+interface ProfileData {
+  name?: string;
+  position?: string;
+  email?: string;
+  phone?: string;
+}
 
 export default function Profile() {
   const navigate = useNavigate();
-  
+
+  const [profile, setProfile] = useState<ProfileData>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState<'Русский' | 'Английский'>('Русский');
   const [maxShifts, setMaxShifts] = useState(19);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -14,13 +25,36 @@ export default function Profile() {
   const [availabilityRemindersEnabled, setAvailabilityRemindersEnabled] = useState(true);
   const [availabilityReminderTimes, setAvailabilityReminderTimes] = useState<number[]>([72, 24]);
 
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const data = await apiGet<ProfileData>('/api/profile');
+      setProfile(data);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to load profile', err);
+      setError('Не удалось загрузить профиль');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEditClick = () => {
     navigate('/profile/edit');
   };
 
-  const handleLogout = () => {
-    // TODO: Handle logout logic
-    console.log('Logging out...');
+  const handleLogout = async () => {
+    try {
+      await apiPost('/api/auth/logout', {});
+    } catch (err) {
+      console.error('Logout failed', err);
+    } finally {
+      localStorage.removeItem('auth_token');
+      navigate('/');
+    }
   };
 
   const toggleLanguage = () => {
@@ -44,12 +78,25 @@ export default function Profile() {
   };
 
   const toggleAvailabilityReminder = (hours: number) => {
-    setAvailabilityReminderTimes(prev => 
-      prev.includes(hours) 
+    setAvailabilityReminderTimes(prev =>
+      prev.includes(hours)
         ? prev.filter(h => h !== hours)
         : [...prev, hours]
     );
   };
+
+  if (loading) {
+    return (
+      <div className="profile-page">
+        <div className="profile-header">
+          <h1>Загрузка профиля...</h1>
+        </div>
+      </div>
+    );
+  }
+
+  const displayName = profile.name || 'Иван Иванов';
+  const displayPosition = profile.position || 'Официант';
 
   return (
     <div className="profile-page">
@@ -61,13 +108,15 @@ export default function Profile() {
           />
         </div>
         <div className="profile-info">
-          <h1>Иван Иванов</h1>
-          <p>Официант</p>
+          <h1>{displayName}</h1>
+          <p>{displayPosition}</p>
         </div>
         <button className="logout-btn" onClick={handleLogout}>
           <LogOut size={20} />
         </button>
       </div>
+
+      {error && <div className="error-banner">{error}</div>}
 
       <button className="edit-btn" onClick={handleEditClick}>
         Редактировать

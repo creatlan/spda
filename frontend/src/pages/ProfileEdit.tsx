@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Pencil, Check } from 'lucide-react';
+import { apiGet, apiPut } from '../utils/api';
 import './ProfileEdit.css';
 
 export default function ProfileEdit() {
@@ -8,19 +9,47 @@ export default function ProfileEdit() {
   const [firstName, setFirstName] = useState('Иван');
   const [lastName, setLastName] = useState('Иванов');
   const [position, setPosition] = useState('Официант');
+  const [error, setError] = useState<string | null>(null);
   const [showPositionMenu, setShowPositionMenu] = useState(false);
 
   const positions = ['Повар', 'Официант', 'Раннер'];
 
-  const handleSave = async () => {
-    // TODO: Send data to backend
-    const profileData = {
-      firstName,
-      lastName,
-      position
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const data = await apiGet<{ name?: string; position?: string }>('/api/profile');
+        if (data.name) {
+          const [first, ...rest] = data.name.split(' ');
+          setFirstName(first);
+          setLastName(rest.join(' '));
+        }
+        if (data.position) {
+          setPosition(data.position);
+        }
+      } catch (err) {
+        console.error('Failed to load profile for edit', err);
+        setError('Не удалось загрузить профиль');
+      }
     };
-    console.log('Saving profile:', profileData);
-    
+
+    loadProfile();
+  }, []);
+
+  const handleSave = async () => {
+    const profileData = {
+      name: `${firstName} ${lastName}`.trim(),
+      position,
+    };
+
+    try {
+      await apiPut('/api/profile', profileData);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to save profile', err);
+      setError('Не удалось сохранить профиль');
+      return;
+    }
+
     // Navigate back to profile
     navigate('/profile');
   };
@@ -43,6 +72,8 @@ export default function ProfileEdit() {
         </button>
         <h2>Редактирование</h2>
       </div>
+
+      {error && <div className="error-banner">{error}</div>}
 
       <div className="photo-section">
         <div className="photo-edit-btn">
