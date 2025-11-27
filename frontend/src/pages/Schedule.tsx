@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { apiGet } from '../utils/api';
 import './Schedule.css';
 
 interface Position {
@@ -15,8 +16,9 @@ export default function Schedule() {
     { id: 'runners', name: 'Раннеры', enabled: true },
     { id: 'kitchen', name: 'Кухня', enabled: true },
   ]);
-  
+
   const [showFilters, setShowFilters] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const weekdaysShort = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
   const weekdaysFull = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -49,34 +51,55 @@ export default function Schedule() {
     timeLabels.push({ hour, label: `${hour}:00` });
   }
 
-  // Mock data
-  const dayShiftWaiters = ['Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов'];
-  const dayShiftKitchen = [
-    'Павел Павлов',
-    'Павел Павлов',
-    'Павел Павлов',
-    'Павел Павлов',
-    'Павел Павлов',
-    'Павел Павлов',
-    'Павел Павлов',
-    'Павел Павлов',
-    'Павел Павлов',
-  ];
-  const dayShiftRunners = ['Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов'];
+  const formatDateParam = (date: Date) => date.toISOString().split('T')[0];
 
-  const eveningShiftWaiters = ['Павел Павлов', 'Павел Павлов', 'Иван Иванов', 'Павел Павлов'];
-  const eveningShiftKitchen = [
-    'Павел Павлов',
-    'Павел Павлов',
-    'Павел Павлов',
-    'Павел Павлов',
-    'Павел Павлов',
-    'Павел Павлов',
-    'Павел Павлов',
-    'Павел Павлов',
-    'Павел Павлов',
-  ];
-  const eveningShiftRunners = ['Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов'];
+  const loadSchedule = async (dateParam: string) => {
+    try {
+      const data = await apiGet<any>(`/api/schedule/day?date=${dateParam}`);
+      const shifts = (data as any).shifts || {};
+      const dayPositions = shifts.day?.positions || shifts.morning?.positions || {};
+      const eveningPositions = shifts.night?.positions || shifts.evening?.positions || {};
+
+      setDayAssignments({
+        waiters: dayPositions.waiters || [],
+        runners: dayPositions.runners || [],
+        kitchen: dayPositions.kitchen || [],
+      });
+
+      setEveningAssignments({
+        waiters: eveningPositions.waiters || [],
+        runners: eveningPositions.runners || [],
+        kitchen: eveningPositions.kitchen || [],
+      });
+      setError(null);
+    } catch (err) {
+      console.error('Failed to load schedule', err);
+      setError('Не удалось загрузить расписание');
+      setDayAssignments(defaultDayAssignments);
+      setEveningAssignments(defaultEveningAssignments);
+    }
+  };
+
+  useEffect(() => {
+    const date = new Date(today);
+    date.setDate(today.getDate() + selectedDateOffset);
+    loadSchedule(formatDateParam(date));
+  }, [selectedDateOffset]);
+
+  const defaultDayAssignments = {
+    waiters: ['Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов'],
+    kitchen: ['Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов'],
+    runners: ['Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов'],
+  };
+
+  const defaultEveningAssignments = {
+    waiters: ['Павел Павлов', 'Павел Павлов', 'Иван Иванов', 'Павел Павлов'],
+    kitchen: ['Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов'],
+    runners: ['Павел Павлов', 'Павел Павлов', 'Павел Павлов', 'Павел Павлов'],
+  };
+
+  const [dayAssignments, setDayAssignments] = useState(defaultDayAssignments);
+  const [eveningAssignments, setEveningAssignments] = useState(defaultEveningAssignments);
 
   const togglePosition = (id: string) => {
     setPositions(positions.map(pos => 
@@ -123,6 +146,8 @@ export default function Schedule() {
           </button>
         </div>
       </div>
+
+      {error && <div className="error-banner">{error}</div>}
 
       {/* Filters Modal - Liquid Glass */}
       {showFilters && (
@@ -207,7 +232,7 @@ export default function Schedule() {
               {positions.find(p => p.id === 'waiters')?.enabled && (
                 <div className="position-section">
                   <h4 className="position-title">Официанты</h4>
-                  {dayShiftWaiters.map((name, idx) => (
+                  {dayAssignments.waiters.map((name, idx) => (
                     <p key={idx} className="staff-name">{name}</p>
                   ))}
                 </div>
@@ -216,7 +241,7 @@ export default function Schedule() {
               {positions.find(p => p.id === 'kitchen')?.enabled && (
                 <div className="position-section">
                   <h4 className="position-title">Кухня</h4>
-                  {dayShiftKitchen.map((name, idx) => (
+                  {dayAssignments.kitchen.map((name, idx) => (
                     <p key={idx} className="staff-name">{name}</p>
                   ))}
                 </div>
@@ -225,7 +250,7 @@ export default function Schedule() {
               {positions.find(p => p.id === 'runners')?.enabled && (
                 <div className="position-section">
                   <h4 className="position-title">Раннеры</h4>
-                  {dayShiftRunners.map((name, idx) => (
+                  {dayAssignments.runners.map((name, idx) => (
                     <p key={idx} className="staff-name">{name}</p>
                   ))}
                 </div>
@@ -244,7 +269,7 @@ export default function Schedule() {
               {positions.find(p => p.id === 'waiters')?.enabled && (
                 <div className="position-section">
                   <h4 className="position-title">Официанты</h4>
-                  {eveningShiftWaiters.map((name, idx) => (
+                  {eveningAssignments.waiters.map((name, idx) => (
                     <p key={idx} className={`staff-name ${name === 'Иван Иванов' ? 'underlined' : ''}`}>
                       {name}
                     </p>
@@ -255,7 +280,7 @@ export default function Schedule() {
               {positions.find(p => p.id === 'kitchen')?.enabled && (
                 <div className="position-section">
                   <h4 className="position-title">Кухня</h4>
-                  {eveningShiftKitchen.map((name, idx) => (
+                  {eveningAssignments.kitchen.map((name, idx) => (
                     <p key={idx} className="staff-name">{name}</p>
                   ))}
                 </div>
@@ -264,7 +289,7 @@ export default function Schedule() {
               {positions.find(p => p.id === 'runners')?.enabled && (
                 <div className="position-section">
                   <h4 className="position-title">Раннеры</h4>
-                  {eveningShiftRunners.map((name, idx) => (
+                  {eveningAssignments.runners.map((name, idx) => (
                     <p key={idx} className="staff-name">{name}</p>
                   ))}
                 </div>

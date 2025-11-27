@@ -3,10 +3,32 @@ import svgPaths from '../imports/iconPaths';
 import ConfirmModal from '../components/ConfirmModal';
 import HistoryModal from '../components/HistoryModal';
 import NextShiftCard from '../components/NextShiftCard';
+import { apiGet, apiPost } from '../utils/api';
 import './Home.css';
 
 interface ShiftData {
   [key: string]: 'day' | 'night' | null;
+}
+
+interface ShiftsResponse {
+  shifts: ShiftData;
+  stats?: {
+    total?: number;
+    day?: number;
+    night?: number;
+  };
+  earnings?: {
+    total?: number;
+    today?: number;
+  };
+}
+
+interface NextShiftResponse {
+  id?: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  type?: 'day' | 'night';
 }
 
 export default function Home() {
@@ -17,37 +39,20 @@ export default function Home() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [shiftStatus, setShiftStatus] = useState<'normal' | 'searching' | 'found'>('normal');
   
-  // Store shift data - will be fetched from backend
-  // TODO: Replace with API call to GET /api/shifts?month=X&year=Y
+  // Store shift data - fetched from backend
   const [shiftsData, setShiftsData] = useState<ShiftData>({});
+  const [monthStats, setMonthStats] = useState({ total: 0, day: 0, night: 0 });
+  const [earnings, setEarnings] = useState({ total: 0, today: 0 });
+  const [nextShift, setNextShift] = useState<NextShiftResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Demo data: Load shifts for current month INCLUDING PAST SHIFTS
-    // TODO: API call to fetch shifts
-    // fetch(`/api/shifts?month=${currentMonth}&year=${currentYear}`)
-    //   .then(res => res.json())
-    //   .then(data => setShiftsData(data))
-    
-    const demoShifts: ShiftData = {};
-    
-    // PAST SHIFTS (hardcoded to show history)
-    demoShifts[`${currentYear}-${currentMonth}-15`] = 'day';     // 15 ноября
-    demoShifts[`${currentYear}-${currentMonth}-16`] = 'night';   // 16 ноября
-    demoShifts[`${currentYear}-${currentMonth}-17`] = 'day';     // 17 ноября
-    demoShifts[`${currentYear}-${currentMonth}-18`] = 'night';   // 18 ноября
-    demoShifts[`${currentYear}-${currentMonth}-19`] = 'day';     // 19 ноября
-    demoShifts[`${currentYear}-${currentMonth}-20`] = 'night';   // 20 ноября
-    
-    // FUTURE SHIFTS
-    const currentDay = today.getDate();
-    demoShifts[`${currentYear}-${currentMonth}-${currentDay + 1}`] = 'day';
-    demoShifts[`${currentYear}-${currentMonth}-${currentDay + 2}`] = 'night';
-    demoShifts[`${currentYear}-${currentMonth}-${currentDay + 4}`] = 'day';
-    demoShifts[`${currentYear}-${currentMonth}-${currentDay + 5}`] = 'night';
-    demoShifts[`${currentYear}-${currentMonth}-${currentDay + 7}`] = 'day';
-    
-    setShiftsData(demoShifts);
+    loadShifts();
   }, [currentMonth, currentYear]);
+
+  useEffect(() => {
+    loadNextShift();
+  }, []);
 
   useEffect(() => {
     const handleCloseHistory = () => {
@@ -63,8 +68,46 @@ export default function Home() {
     'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
   ];
 
+  const loadShifts = async () => {
+    try {
+      setError(null);
+      const data = await apiGet<ShiftsResponse>(`/api/shifts?month=${currentMonth}&year=${currentYear}`);
+
+      setShiftsData(data.shifts || {});
+      setMonthStats({
+        total: data.stats?.total ?? 0,
+        day: data.stats?.day ?? 0,
+        night: data.stats?.night ?? 0,
+      });
+      setEarnings({
+        total: data.earnings?.total ?? 0,
+        today: data.earnings?.today ?? 0,
+      });
+    } catch (err) {
+      console.error('Failed to load shifts', err);
+      setError('Не удалось загрузить данные смен');
+      setShiftsData({});
+      setMonthStats({ total: 0, day: 0, night: 0 });
+      setEarnings({ total: 0, today: 0 });
+    }
+  };
+
+  const loadNextShift = async () => {
+    try {
+      const data = await apiGet<NextShiftResponse>('/api/shifts/next');
+      setNextShift(data);
+    } catch (err) {
+      console.warn('Failed to load next shift', err);
+      setNextShift(null);
+    }
+  };
+
   const getDateKey = (year: number, month: number, day: number) => {
     return `${year}-${month}-${day}`;
+  };
+
+  const formatDateParam = (date: Date) => {
+    return date.toISOString().split('T')[0];
   };
 
   const getShiftForDay = (day: number) => {
@@ -106,17 +149,29 @@ export default function Home() {
     setIsModalOpen(true);
   };
 
-  const handleConfirmReplacement = () => {
+  const handleConfirmReplacement = async () => {
     setIsModalOpen(false);
     setShiftStatus('searching');
-    
-    // TODO: API call to POST /api/shifts/find-replacement
-    console.log('Finding replacement...');
-    
-    // Demo: After 3 seconds, mark as found
-    setTimeout(() => {
-      setShiftStatus('found');
-    }, 3000);
+
+    const fallbackDate = new Date(today);
+    fallbackDate.setDate(today.getDate() + 1);
+
+    try {
+      const payload = {
+        shiftId: nextShift?.id,
+        date: nextShift?.date ?? formatDateParam(fallbackDate),
+        time: nextShift?.type === 'night' ? 'evening' : 'morning',
+        shiftStart: nextShift?.startTime,
+        shiftEnd: nextShift?.endTime,
+      };
+
+      const response = await apiPost<{ replacementFound?: boolean }>('/api/shifts/find-replacement', payload);
+      setShiftStatus(response.replacementFound ? 'found' : 'searching');
+    } catch (err) {
+      console.error('Failed to request replacement', err);
+      setError('Не удалось отправить запрос на замену');
+      setShiftStatus('normal');
+    }
   };
 
   const handleHistoryClick = () => {
@@ -140,13 +195,20 @@ export default function Home() {
   const nextMonthDays = totalCells - (firstDay + daysInMonth);
   const nextDaysArray = Array.from({ length: nextMonthDays }, (_, i) => i + 1);
 
-  const nextShiftDate = new Date(today);
-  nextShiftDate.setDate(today.getDate() + 1);
+  const nextShiftDate = nextShift
+    ? new Date(nextShift.date)
+    : (() => {
+        const fallback = new Date(today);
+        fallback.setDate(today.getDate() + 1);
+        return fallback;
+      })();
   const formattedDate = nextShiftDate.toLocaleDateString('ru-RU', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric'
   });
+  const nextShiftStart = nextShift?.startTime ?? '9:00';
+  const nextShiftEnd = nextShift?.endTime ?? '15:00';
 
   const isToday = (day: number) => {
     return day === today.getDate() && 
@@ -160,12 +222,14 @@ export default function Home() {
         <h1>WorkPlan</h1>
       </div>
 
+      {error && <div className="error-banner">{error}</div>}
+
       <div className="content">
         <div className="next-shift-wrapper">
           <NextShiftCard
             date={formattedDate}
-            startTime="9:00"
-            endTime="15:00"
+            startTime={nextShiftStart}
+            endTime={nextShiftEnd}
             onFindReplacement={handleFindReplacementClick}
             status={shiftStatus}
           />
@@ -175,7 +239,7 @@ export default function Home() {
           <h2>В этом месяце</h2>
           <div className="month-cards">
             <div className="stats-card">
-              <p className="stats-title">9 смен</p>
+              <p className="stats-title">{monthStats.total} смен</p>
               <div className="stats-details">
                 <div className="stat-item">
                   <svg className="icon-sun" fill="none" viewBox="0 0 22 22">
@@ -187,7 +251,7 @@ export default function Home() {
                       strokeWidth="2"
                     />
                   </svg>
-                  <span>5</span>
+                  <span>{monthStats.day}</span>
                 </div>
                 <div className="stat-item">
                   <svg className="icon-moon" fill="none" viewBox="0 0 20 20">
@@ -199,15 +263,15 @@ export default function Home() {
                       strokeWidth="2"
                     />
                   </svg>
-                  <span>4</span>
+                  <span>{monthStats.night}</span>
                 </div>
               </div>
             </div>
 
             <div className="earnings-card">
-              <p className="earnings-amount">+ 973 ₽</p>
+              <p className="earnings-amount">+ {earnings.total} ₽</p>
               <p className="earnings-today">
-                Сегодня <span className="earnings-today-amount">+173 ₽</span>
+                Сегодня <span className="earnings-today-amount">+{earnings.today} ₽</span>
               </p>
             </div>
           </div>

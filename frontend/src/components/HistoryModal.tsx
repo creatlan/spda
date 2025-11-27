@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import svgPaths from '../imports/iconPaths';
+import { apiGet } from '../utils/api';
 import './HistoryModal.css';
 
 interface HistoryModalProps {
@@ -68,44 +69,19 @@ export default function HistoryModal({ isOpen, onClose, month, year }: HistoryMo
   }, [isOpen, month, year]);
 
   const fetchHistoryData = async () => {
-    // TODO: Replace with actual API call
-    // GET /api/history/all-time
-    // GET /api/history/month?month=${month}&year=${year}
-    
-    // Mock data
-    const mockAllTime: AllTimeStats = {
-      totalShifts: 30,
-      totalHours: 240,
-      totalEarnings: 34075,
-      dayShifts: 18,
-      dayHours: 144,
-      dayEarnings: 14075,
-      nightShifts: 12,
-      nightHours: 96,
-      nightEarnings: 14075
-    };
+    try {
+      const [allTime, monthData] = await Promise.all([
+        apiGet<AllTimeStats>('/api/history/all-time'),
+        apiGet<MonthStats>(`/api/history/month?month=${month}&year=${year}`),
+      ]);
 
-    const mockMonth: MonthStats = {
-      totalShifts: 9,
-      totalHours: 72,
-      totalEarnings: 24075,
-      dayShifts: 5,
-      dayHours: 40,
-      dayEarnings: 14075,
-      nightShifts: 4,
-      nightHours: 32,
-      nightEarnings: 14000,
-      shifts: [
-        { date: '01.11.2024', type: 'day', hours: 6, earnings: 4075 },
-        { date: '03.11.2024', type: 'day', hours: 6, earnings: 1075 },
-        { date: '04.11.2024', type: 'night', hours: 6, earnings: 4075 },
-        { date: '06.11.2024', type: 'day', hours: 6, earnings: 475 },
-        { date: '07.11.2024', type: 'night', hours: 6, earnings: 4075 },
-      ]
-    };
-
-    setAllTimeStats(mockAllTime);
-    setMonthStats(mockMonth);
+      setAllTimeStats(allTime);
+      setMonthStats(monthData);
+    } catch (err) {
+      console.error('Failed to load history', err);
+      setAllTimeStats(null);
+      setMonthStats(null);
+    }
   };
 
   const handleClose = () => {
